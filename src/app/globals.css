@@ -1,26 +1,98 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0d0d0d;
+  --foreground: #f5f5f4;
+  --card: #1a1a1a;
+  --card-hover: #222222;
+  --border: #2a2a2a;
+  --muted: #8f8f8a;
+  --accent: #e8a65a;
+  --accent-strong: #d99340;
+  --accent-foreground: #141414;
+  --success: #4ade80;
+  --danger: #ef4444;
+  --rarity-common: #b0c3d9;
+  --rarity-uncommon: #5e98d9;
+  --rarity-rare: #4b69ff;
+  --rarity-mythical: #8847ff;
+  --rarity-legendary: #d32ce6;
+  --rarity-ancient: #eb4b4b;
+  --rarity-gold: #ffd700;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-yekan-bakh), var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Latin digits inside Persian text stay Latin; overall UI digits are Persian via Yekan Bakh FaNum */
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* Thin custom scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3a transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 4px;
+}
+
+/* Persian digits helper — only affects fa locale */
+html[lang="fa"] .nums {
+  font-feature-settings: "ss02";
+}
+
+/* Ticker animation (RTL-aware) */
+@keyframes ticker-scroll-rtl {
+  from { transform: translateX(0); }
+  to { transform: translateX(50%); }
+}
+@keyframes ticker-scroll-ltr {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.ticker-rtl {
+  animation: ticker-scroll-rtl 40s linear infinite;
+}
+.ticker-ltr {
+  animation: ticker-scroll-ltr 40s linear infinite;
+}
+.ticker-rtl:hover, .ticker-ltr:hover {
+  animation-play-state: paused;
+}
+
+/* Subtle entrance animation */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fade-up 0.5s ease-out both;
 }

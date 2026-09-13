@@ -1,0 +1,173 @@
+{
+  "app": {
+    "title": "VN Shop — Buy & Sell CS2 Skins",
+    "description": "A CS2 skins marketplace with live market depth, verified floats and payouts in seconds."
+  },
+  "nav": {
+    "buy": "Buy",
+    "sell": "Sell",
+    "trade": "Trade",
+    "marketData": "Market data",
+    "soon": "Soon",
+    "searchPlaceholder": "Search skins, patterns, seeds…",
+    "login": "Login with Steam",
+    "notifications": "Notifications",
+    "language": "Language",
+    "currency": "Currency"
+  },
+  "hero": {
+    "badgeTrades": "trades settled today",
+    "badgePayout": "Avg. payout",
+    "title": "Your inventory is worth more than a guess.",
+    "titleHighlight": "a guess.",
+    "subtitle": "VN Shop prices every skin against live market depth, verifies the float before it is listed, and pays out in seconds. Sign in with Steam — no password, no registration form, no waiting for an offer to be accepted.",
+    "sellCta": "Sell skins",
+    "buyCta": "Buy skins",
+    "tradeCta": "Trade",
+    "trustSteam": "Steam OpenID — we never see your password",
+    "trustEscrow": "Escrowed payouts",
+    "liveQuote": "Live Quote",
+    "instant": "Instant",
+    "card": "Card",
+    "bank": "Bank"
+  },
+  "ticker": {
+    "label": "Live trades",
+    "ago": "ago",
+    "secondsShort": "s"
+  },
+  "floor": {
+    "kicker": "THE FLOOR",
+    "title": "Browse with a reason, not a wall of pictures.",
+    "subtitle": "Most viewed in the last hour.",
+    "tabs": {
+      "trending": "Trending now",
+      "under100": "Under $100",
+      "bestDeals": "Best deals",
+      "knivesGloves": "Knives & gloves",
+      "justListed": "Just listed"
+    },
+    "listings": "listings",
+    "filters": "Filters"
+  },
+  "skinCard": {
+    "underSteam": "under Steam",
+    "addToCart": "Add",
+    "float": "float",
+    "wear": "Wear",
+    "view": "View",
+    "stattrak": "StatTrak",
+    "trades": "trades"
+  },
+  "rare": {
+    "kicker": "RARE SPECIALS",
+    "title": "Three examples our pattern team pulled aside this week.",
+    "subtitle": "Every rare special is photographed in-house, float-verified and pattern-indexed. You see the exact item, never a catalogue render.",
+    "rareSpecial": "Rare Special",
+    "buyNow": "Buy now",
+    "inspect": "Inspect in game",
+    "view": "View",
+    "patternNote": "Pattern index {index} of {total} scanned."
+  },
+  "sell": {
+    "kicker": "INSTANT SELL",
+    "title": "See your inventory. Pick. Sell.",
+    "filterPlaceholder": "Filter 120 items — try \"StatTrak™\" or \"float < 0.1\"",
+    "selectAll": "Select all",
+    "inventoryValue": "Inventory value:",
+    "selected": "Selected",
+    "estimatedPayout": "Estimated payout:",
+    "quickSell": "Quick sell {count} items",
+    "loadMyItems": "Load my items",
+    "demoNote": "Demo inventory. Sign in to price your own — quotes are locked for 10 minutes once generated."
+  },
+  "custody": {
+    "kicker": "CUSTODY",
+    "title": "Nobody has to go first.",
+    "steps": {
+      "one": {
+        "title": "Buyer commits",
+        "item": "item — Still in seller's Steam inventory",
+        "cash": "cash — Held by escrow, not paid out"
+      },
+      "two": {
+        "title": "Item verified",
+        "item": "item — Received and float-verified by VN Shop",
+        "cash": "cash — Still in escrow"
+      },
+      "three": {
+        "title": "Item delivered",
+        "item": "item — Sent to buyer's inventory",
+        "cash": "cash — Still in escrow"
+      },
+      "four": {
+        "title": "Seller paid",
+        "item": "item — Buyer owns it",
+        "cash": "cash — Released to seller, minus 2% fee"
+      }
+    }
+  },
+  "stats": {
+    "kicker": "MARKET STATS",
+    "activeListings": "ACTIVE LISTINGS",
+    "activeListingsSub": "Every float verified before listing",
+    "settled30d": "SETTLED 30D",
+    "settled30dSub": "Across 62 countries",
+    "medianPayout": "MEDIAN PAYOUT",
+    "medianPayoutSub": "96% under two minutes",
+    "disputeRate": "DISPUTE RATE",
+    "disputeRateSub": "24/7 human support",
+    "indexTitle": "VN SHOP INDEX",
+    "indexSub": "Weighted price of the 500 most traded skins"
+  },
+  "faq": {
+    "kicker": "STRAIGHT ANSWERS",
+    "title": "The questions people actually ask.",
+    "items": {
+      "q1": "What stops you from just taking my skin?",
+      "q1a": "The same thing that stops us taking your money: we never hold both. Escrow releases to the seller only against a confirmed Steam trade record, and refunds to the buyer automatically if that record never appears. There is no state in the flow where keeping both is possible — it isn't a policy we could quietly change, it's the shape of the system.",
+      "q2": "Is instant sell just a worse price?",
+      "q3": "Why is your fee 2% when others advertise 0%?",
+      "q4": "Do I have to give you my Steam password?",
+      "q5": "Is my item locked up while it is listed?",
+      "q6": "What if I list at the wrong price?"
+    }
+  },
+  "finalCta": {
+    "title": "Your inventory is worth more than you think.",
+    "subtitle": "Sign in with Steam to see live payouts for every item you own. No listing required, nothing locked, and you can close the tab knowing the number.",
+    "login": "Login with Steam",
+    "note": "Read-only access · never asks for your password · no card required"
+  },
+  "footer": {
+    "tagline": "A marketplace for CS2 skins where the item and the money are never in the same hands at the same time.",
+    "market": "MARKET",
+    "sellCol": "SELL",
+    "learn": "LEARN",
+    "company": "COMPANY",
+    "links": {
+      "browseAll": "Browse all skins",
+      "knivesGloves": "Knives & gloves",
+      "under50": "Under $50",
+      "priceIndex": "Price index",
+      "floatSearch": "Float search",
+      "instantSell": "Instant sell",
+      "listItem": "List an item",
+      "payoutMethods": "Payout methods",
+      "sellerFees": "Seller fees",
+      "bulkSell": "Bulk sell",
+      "howCustody": "How custody works",
+      "floatExplained": "Float explained",
+      "patternGuide": "Pattern index guide",
+      "tradeHolds": "Trade holds",
+      "support": "Support",
+      "about": "About",
+      "careers": "Careers",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "custodyPolicy": "Custody policy"
+    },
+    "copyright": "© 2026 VN Shop. Not affiliated with or endorsed by Valve Corporation.",
+    "status": "All systems operational · trades settling normally"
+  }
+}
