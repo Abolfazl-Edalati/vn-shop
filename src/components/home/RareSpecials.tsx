@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { Sparkles, Eye } from 'lucide-react';
-import { getRareSpecials, formatToman, formatUsd } from '@/data/skins';
+import { getRareSpecials, primaryPrice, secondaryPrice } from '@/data/skins';
 import { wearLabel } from '@/components/skins/SkinCard';
 
 export default function RareSpecials() {
@@ -69,11 +69,11 @@ export default function RareSpecials() {
                 {/* price */}
                 <div className="mt-auto pt-5">
                   <div className="flex flex-wrap items-baseline gap-2">
-                    <p className="text-2xl font-black">
-                      {formatToman(main.price_usd, locale)}
-                      <span className="ms-1 text-xs font-medium text-muted">تومان</span>
+                    <p className="text-2xl font-black text-foreground">
+                      {primaryPrice(main.price_usd, locale)}
+                      {locale === 'fa' && <span className="ms-1 text-xs font-medium text-muted">تومان</span>}
                     </p>
-                    <p className="text-xs text-muted">{formatUsd(main.price_usd, locale)}</p>
+                    <p className="text-xs text-muted">{secondaryPrice(main.price_usd, locale)}</p>
                   </div>
                   {main.discount_pct > 0 && (
                     <p className="mt-1 text-xs font-bold text-emerald-400">
@@ -117,9 +117,12 @@ export default function RareSpecials() {
                   <p className="mt-1 text-xs text-muted">
                     {wearLabel(s.wear, locale)} · float {new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US', { maximumFractionDigits: 4 }).format(s.float)}
                   </p>
-                  <div className="mt-2 flex flex-wrap items-baseline gap-1.5">
-                    <p className="text-sm font-bold">{formatToman(s.price_usd, locale)} <span className="text-[10px] font-medium text-muted">تومان</span></p>
-                    <p className="text-[10px] text-muted">{formatUsd(s.price_usd, locale)}</p>
+                  <div className="mt-2 flex items-baseline gap-1.5">
+                    <p className="text-sm font-bold">
+                      {primaryPrice(s.price_usd, locale)}
+                      {locale === 'fa' && <span className="text-[10px] font-medium text-muted"> تومان</span>}
+                    </p>
+                    <p className="text-[10px] text-muted">{secondaryPrice(s.price_usd, locale)}</p>
                   </div>
                 </div>
               </Link>

@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Eye, ShieldCheck, Lock, BadgeCheck, Send, Banknote } from 'lucide-react';
 import SteamIcon from '@/components/icons/SteamIcon';
-import { formatToman, formatUsd, type MockSkin } from '@/data/skins';
+import { primaryPrice, secondaryPrice, type MockSkin } from '@/data/skins';
 import { wearLabel } from '@/components/skins/SkinCard';
 
 export default function ItemDetail({ skin }: { skin: MockSkin }) {
@@ -138,13 +138,13 @@ export default function ItemDetail({ skin }: { skin: MockSkin }) {
             <div className="mt-4 rounded-xl border border-border bg-background/60 p-4 text-center">
               <p className="text-[10px] uppercase tracking-widest text-muted">{L('قیمت', 'Price')}</p>
               <p className="mt-1 text-3xl font-black">
-                {formatToman(skin.price_usd, locale)}
-                <span className="ms-1 text-sm font-medium text-muted">تومان</span>
+                {primaryPrice(skin.price_usd, locale)}
+                {locale === 'fa' && <span className="ms-1 text-sm font-medium text-muted">تومان</span>}
               </p>
-              <p className="text-xs text-muted">{formatUsd(skin.price_usd, locale)}</p>
+              <p className="text-xs text-muted">{secondaryPrice(skin.price_usd, locale)}</p>
               {skin.discount_pct > 0 && (
                 <p className="mt-1 text-[11px] text-muted">
-                  <span className="line-through">{formatUsd(skin.steam_price_usd, locale)}</span>{' '}
+                  <span className="line-through">{primaryPrice(skin.steam_price_usd, locale)}</span>{' '}
                   <span className="font-bold text-emerald-400">-{nf(skin.discount_pct)}%</span>
                 </p>
               )}

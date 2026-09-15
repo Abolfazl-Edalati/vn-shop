@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Check, Search, Zap, Download } from 'lucide-react';
-import { getDemoInventory, formatToman, formatUsd, USD_TO_TOMAN } from '@/data/skins';
+import { getDemoInventory, primaryPrice, secondaryPrice, USD_TO_TOMAN } from '@/data/skins';
 import { wearLabel } from '@/components/skins/SkinCard';
 
 const PAYOUT_RATE = 0.925; // mock: after ~7.5% total haircut
@@ -102,10 +102,10 @@ export default function SellPanel() {
                       </span>
                     </span>
                     <span className="shrink-0 text-end">
-                      <span className="block text-xs font-bold">{formatToman(s.price_usd, locale)}</span>
+                      <span className="block text-xs font-bold">{primaryPrice(s.price_usd, locale)}</span>
                       {s.discount_pct > 0 && (
                         <span className="mt-0.5 block text-[10px] text-muted line-through">
-                          {formatToman(s.steam_price_usd, locale)}
+                          {primaryPrice(s.steam_price_usd, locale)}
                         </span>
                       )}
                     </span>
@@ -121,19 +121,19 @@ export default function SellPanel() {
           <div className="space-y-2.5 text-xs">
             <p className="flex justify-between text-muted">
               {t('inventoryValue')}
-              <b className="text-foreground">{formatToman(inventoryValue, locale)} <span className="font-medium text-muted">تومان</span></b>
+              <b className="text-foreground">{primaryPrice(inventoryValue, locale)}{locale === 'fa' && <span className="font-medium text-muted"> تومان</span>}</b>
             </p>
             <p className="flex justify-between text-muted">
               {t('selected')} ({nf(selected.size)}):
-              <b className="text-foreground">{formatToman(selectedValue, locale)} <span className="font-medium text-muted">تومان</span></b>
+              <b className="text-foreground">{primaryPrice(selectedValue, locale)}{locale === 'fa' && <span className="font-medium text-muted"> تومان</span>}</b>
             </p>
             <p className="flex items-baseline justify-between border-t border-border pt-2.5 text-muted">
               {t('estimatedPayout')}
               <b className="text-base font-black text-accent">
-                {formatToman(payout, locale)} <span className="text-xs font-medium">تومان</span>
+                {primaryPrice(payout, locale)}{locale === 'fa' && <span className="text-xs font-medium"> تومان</span>}
               </b>
             </p>
-            <p className="text-[10px] text-muted">{formatUsd(payout, locale)}</p>
+            <p className="text-[10px] text-muted">{secondaryPrice(payout, locale)}</p>
           </div>
 
           <button className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-accent text-sm font-bold text-accent-foreground transition-colors hover:bg-accent-strong disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed" disabled={selected.size === 0}>

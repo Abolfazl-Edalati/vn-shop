@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { ShieldCheck, Lock, Zap, CreditCard, Landmark } from 'lucide-react';
-import { skins, formatToman, formatUsd } from '@/data/skins';
+import { skins, primaryPrice, secondaryPrice } from '@/data/skins';
 
 export default function Hero() {
   const t = useTranslations('hero');
@@ -127,10 +127,10 @@ export default function Hero() {
                 {locale === 'fa' ? 'پرداخت' : 'Payout'}
               </p>
               <p className="mt-1 text-3xl font-black text-foreground">
-                {formatToman(heroItem.price_usd, locale)}
-                <span className="ms-1 text-sm font-medium text-muted">تومان</span>
+                {primaryPrice(heroItem.price_usd, locale)}
+                {locale === 'fa' && <span className="ms-1 text-sm font-medium text-muted">تومان</span>}
               </p>
-              <p className="text-xs text-muted">{formatUsd(heroItem.price_usd, locale)}</p>
+              <p className="text-xs text-muted">{secondaryPrice(heroItem.price_usd, locale)}</p>
 
               {/* payment methods */}
               <div className="mt-3 flex items-center justify-center gap-2 text-[10px] text-muted">

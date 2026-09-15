@@ -62,6 +62,32 @@ export function formatFaNum(n: number, locale: string): string {
     : new Intl.NumberFormat('en-US').format(n);
 }
 
+// --- Locale-aware price helpers ---
+// fa: primary = Toman (Persian digits), secondary = USD
+// en: primary = USD, secondary = Toman (Latin digits, "Toman" in English)
+export function tomanString(usd: number, locale: string): string {
+  return new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US').format(
+    Math.round(usd * USD_TO_TOMAN)
+  );
+}
+
+export function usdString(usd: number, locale: string): string {
+  return new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(usd);
+}
+
+export function primaryPrice(usd: number, locale: string): string {
+  return locale === 'fa' ? tomanString(usd, 'fa') : usdString(usd, 'en');
+}
+
+export function secondaryPrice(usd: number, locale: string): string {
+  return locale === 'fa'
+    ? usdString(usd, 'fa')
+    : `${tomanString(usd, 'en')} Toman`;
+}
+
 // Section helpers
 export function getTrending(): MockSkin[] {
   return [...skins].sort((a, b) => b.seller_trades - a.seller_trades).slice(0, 8);

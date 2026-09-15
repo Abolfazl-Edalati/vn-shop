@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { skins } from '@/data/skins';
-import { formatUsd } from '@/data/skins';
+import { primaryPrice } from '@/data/skins';
 
 export default function Ticker() {
   const locale = useLocale();
@@ -14,7 +14,7 @@ export default function Ticker() {
     .slice(0, 14)
     .map((s, i) => ({
       name: s.market_hash_name,
-      price: formatUsd(s.price_usd, locale === 'fa' ? 'fa' : 'en'),
+      price: primaryPrice(s.price_usd, locale),
       wear: s.wear,
       seconds: ((i * 7) % 55) + 2,
     }));
@@ -26,7 +26,7 @@ export default function Ticker() {
           <span className="size-1.5 rounded-full bg-accent/70" />
           <span className="font-medium text-foreground/90">{f.name}</span>
           {f.wear === 'Factory New' && <span className="text-accent">FN</span>}
-          <span className="font-bold">{f.price}</span>
+          <span className="font-bold">{f.price}{locale === 'fa' ? ' تومان' : ''}</span>
           <span className="text-[10px]">
             {new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US').format(f.seconds)}
             {locale === 'fa' ? ' ثانیه پیش' : 's ago'}
