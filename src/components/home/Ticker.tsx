@@ -43,9 +43,9 @@ export default function Ticker() {
           {row('a')}
           {row('b')}
         </div>
-        {/* edge fades */}
-        <div className="pointer-events-none absolute inset-y-0 start-0 w-16 bg-gradient-to-r from-background to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 end-0 w-16 bg-gradient-to-l from-background to-transparent" />
+        {/* edge fades (gradient direction matches RTL/LTR side) */}
+        <div className={`pointer-events-none absolute inset-y-0 start-0 w-16 ${locale === 'fa' ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-background to-transparent`} />
+        <div className={`pointer-events-none absolute inset-y-0 end-0 w-16 ${locale === 'fa' ? 'bg-gradient-to-r' : 'bg-gradient-to-l'} from-background to-transparent`} />
       </div>
     </div>
   );
