@@ -44,7 +44,7 @@ export default function SkinCard({ skin }: { skin: MockSkin }) {
       <div
         className="relative aspect-square overflow-hidden p-4"
         style={{
-          background: `radial-gradient(65% 65% at 50% 42%, ${skin.rarity_color}1f 0%, transparent 75%), #101010`,
+          background: `radial-gradient(65% 65% at 50% 42%, ${skin.rarity_color}1f 0%, transparent 75%), var(--tile)`,
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
