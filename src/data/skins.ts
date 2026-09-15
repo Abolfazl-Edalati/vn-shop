@@ -1,12 +1,18 @@
 import 'next-intl';
 
+// Common CS2 category keys used across filters (single source of truth)
+export const ALL_CATEGORIES = [
+  'Rifles', 'Snipers', 'Pistols', 'SMGs', 'Shotguns', 'Machineguns', 'Knives', 'Gloves', 'Accessory',
+] as const;
+export type CategoryKey = (typeof ALL_CATEGORIES)[number];
+
 export type MockSkin = {
   id: string;
   market_hash_name: string;
   weapon: string;
   pattern: string;
   name: string;
-  category: 'Rifles' | 'Pistols' | 'Knives' | 'Gloves';
+  category: CategoryKey;
   rarity_color: string;
   rarity_name?: string;
   stattrak: boolean;
@@ -25,6 +31,10 @@ export type MockSkin = {
   pattern_index: number;
   souvenir: boolean;
   listed_hours_ago: number;
+  fast_trade: boolean;
+  has_sticker: boolean;
+  has_nametag: boolean;
+  nametag: string | null;
 };
 
 import raw from './skins.json';
