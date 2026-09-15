@@ -84,7 +84,7 @@ export default function SellPanel() {
                     >
                       {isSel && <Check className="size-3.5" />}
                     </span>
-                    <span className="size-12 shrink-0 overflow-hidden rounded-lg bg-[#101010]">
+                    <span className="size-12 shrink-0 overflow-hidden rounded-lg bg-tile">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={s.image} alt={s.market_hash_name} className="h-full w-full object-contain p-1" />
                     </span>

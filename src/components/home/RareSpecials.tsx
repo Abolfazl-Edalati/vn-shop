@@ -28,7 +28,7 @@ export default function RareSpecials() {
           <article className="group relative overflow-hidden rounded-2xl border border-border bg-card">
             <div className="grid gap-0 sm:grid-cols-2">
               {/* image */}
-              <div className="relative aspect-square overflow-hidden bg-[#101010]">
+              <div className="relative aspect-square overflow-hidden bg-tile">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={main.image}
@@ -105,7 +105,7 @@ export default function RareSpecials() {
                 href={`/item/${s.id}`}
                 className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-all hover:border-accent/40 hover:bg-card-hover"
               >
-                <div className="size-24 shrink-0 overflow-hidden rounded-xl bg-[#101010]">
+                <div className="size-24 shrink-0 overflow-hidden rounded-xl bg-tile">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={s.image} alt={s.market_hash_name} className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-110" />
                 </div>

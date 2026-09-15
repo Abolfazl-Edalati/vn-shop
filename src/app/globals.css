@@ -12,6 +12,7 @@
   --accent-foreground: #141414;
   --success: #4ade80;
   --danger: #ef4444;
+  --tile: #101010;
   --rarity-common: #b0c3d9;
   --rarity-uncommon: #5e98d9;
   --rarity-rare: #4b69ff;
@@ -31,6 +32,7 @@
   --accent: #c77d2e;
   --accent-strong: #b06d20;
   --accent-foreground: #ffffff;
+  --tile: #efefec;
 }
 
 @theme inline {
@@ -45,6 +47,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-success: var(--success);
   --color-danger: var(--danger);
+  --color-tile: var(--tile);
   --font-sans: var(--font-yekan-bakh), var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 }
