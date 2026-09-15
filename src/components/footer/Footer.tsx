@@ -53,7 +53,7 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(4,1fr)]">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" dir="ltr">
               <span className="flex size-9 items-center justify-center rounded-lg bg-accent text-accent-foreground font-black">
                 VN
               </span>

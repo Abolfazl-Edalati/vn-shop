@@ -133,8 +133,14 @@ export default function MarketGrid() {
 
       {/* grid */}
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {filtered.map((skin) => (
-          <SkinCard key={skin.id} skin={skin} />
+        {filtered.map((skin, i) => (
+          <div
+            key={`${cat}-${sort}-${stattrakOnly}-${maxPrice}-${query}-${skin.id}`}
+            className="card-in"
+            style={{ animationDelay: `${Math.min(i, 16) * 30}ms` }}
+          >
+            <SkinCard skin={skin} />
+          </div>
         ))}
       </div>
 

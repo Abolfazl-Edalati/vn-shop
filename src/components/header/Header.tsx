@@ -2,21 +2,20 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { Search, Bell, Sun, Moon, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { Search, Bell, ChevronDown } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
+import { ThemeToggle } from './ThemeToggle';
 import SteamIcon from '@/components/icons/SteamIcon';
 
 export default function Header() {
   const t = useTranslations('nav');
   const locale = useLocale();
-  const [isDark, setIsDark] = useState(true);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
         {/* Logo */}
-        <Link href="/" className="flex shrink-0 items-center gap-2">
+        <Link href="/" className="flex shrink-0 items-center gap-2" dir="ltr">
           <span className="flex size-8 items-center justify-center rounded-lg bg-accent text-accent-foreground font-black">
             VN
           </span>
@@ -50,13 +49,7 @@ export default function Header() {
           <button className="hidden rounded-md px-2 py-1.5 text-muted hover:bg-card-hover hover:text-foreground transition-colors cursor-pointer sm:inline-flex" aria-label="Currency">
             <span className="text-xs font-medium">$</span>
           </button>
-          <button
-            onClick={() => setIsDark(!isDark)}
-            className="hidden rounded-md px-2 py-1.5 text-muted hover:bg-card-hover hover:text-foreground transition-colors cursor-pointer sm:inline-flex"
-            aria-label="Toggle theme"
-          >
-            {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </button>
+          <ThemeToggle />
           <button className="relative rounded-md px-2 py-1.5 text-muted hover:bg-card-hover hover:text-foreground transition-colors cursor-pointer" aria-label={t('notifications')}>
             <Bell className="size-4" />
             <span className="absolute end-1.5 top-1.5 size-1.5 rounded-full bg-accent" />

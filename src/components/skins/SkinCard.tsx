@@ -14,10 +14,11 @@ const wearLabels: Record<string, { fa: string; en: string }> = {
   'Battle-Scarred': { fa: 'فرسوده', en: 'Battle-Scarred' },
 };
 
-export function wearLabel(wear: string, locale: string): string {
+// Wear names are shown in English in BOTH locales (CS2 community standard)
+export function wearLabel(wear: string, _locale?: string): string {
   const entry = wearLabels[wear];
   if (!entry) return wear;
-  return locale === 'fa' ? entry.fa : entry.en;
+  return entry.en;
 }
 
 export default function SkinCard({ skin }: { skin: MockSkin }) {

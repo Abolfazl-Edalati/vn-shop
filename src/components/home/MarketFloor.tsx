@@ -84,8 +84,10 @@ export default function MarketFloor() {
 
       {/* grid */}
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {items.slice(0, 8).map((skin) => (
-          <SkinCard key={skin.id} skin={skin} />
+        {items.slice(0, 8).map((skin, i) => (
+          <div key={`${tab}-${skin.id}`} className="card-in" style={{ animationDelay: `${i * 45}ms` }}>
+            <SkinCard skin={skin} />
+          </div>
         ))}
       </div>
     </section>

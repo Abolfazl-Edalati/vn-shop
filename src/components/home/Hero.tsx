@@ -108,7 +108,7 @@ export default function Hero() {
             </div>
 
             {/* item image */}
-            <div className="mx-auto mt-4 aspect-[16/10] w-full max-w-[320px]">
+            <div className="mx-auto mt-4 aspect-[16/10] w-full max-w-[320px] float-gentle">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={heroItem.image}
