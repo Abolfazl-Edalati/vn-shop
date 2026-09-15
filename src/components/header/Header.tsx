@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { Search, Bell, ChevronDown } from 'lucide-react';
@@ -10,6 +11,19 @@ import SteamIcon from '@/components/icons/SteamIcon';
 export default function Header() {
   const t = useTranslations('nav');
   const locale = useLocale();
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Ctrl+K / Cmd+K focuses the site search (overrides browser shortcut)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
@@ -34,6 +48,7 @@ export default function Header() {
         <div className="relative hidden flex-1 max-w-md lg:block">
           <Search className="absolute inset-y-0 start-3.5 my-auto size-4 text-muted" />
           <input
+            ref={searchRef}
             type="search"
             placeholder={t('searchPlaceholder')}
             className="h-9 w-full rounded-lg border border-border bg-card ps-10 pe-14 text-sm text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none transition-colors"
