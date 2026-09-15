@@ -169,5 +169,16 @@
     },
     "copyright": "© ۲۰۲۶ VN Shop. وابسته به Valve Corporation نیست و توسط آن تأیید نشده است.",
     "status": "همه سیستم‌ها فعال · تریدها در حال تسویه"
+  },
+  "marketFilters": {
+    "title": "فیلترها",
+    "category": "دسته",
+    "quick": "دسترسی سریع",
+    "fastTrade": "ترید سریع",
+    "haveSticker": "استیکر دارد",
+    "nameTag": "نیم‌تگ",
+    "wear": "ویر (وضعیت)",
+    "priceRange": "محدوده قیمت",
+    "reset": "حذف فیلترها"
   }
 }

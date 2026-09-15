@@ -169,5 +169,16 @@
     },
     "copyright": "© 2026 VN Shop. Not affiliated with or endorsed by Valve Corporation.",
     "status": "All systems operational · trades settling normally"
+  },
+  "marketFilters": {
+    "title": "Filters",
+    "category": "Category",
+    "quick": "Quick",
+    "fastTrade": "Fast Trade",
+    "haveSticker": "Have Sticker",
+    "nameTag": "NameTag",
+    "wear": "Wear",
+    "priceRange": "Price Range",
+    "reset": "Reset filters"
   }
 }
