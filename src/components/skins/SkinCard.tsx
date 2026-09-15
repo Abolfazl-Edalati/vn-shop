@@ -75,7 +75,6 @@ export default function SkinCard({ skin }: { skin: MockSkin }) {
         <div className="mt-auto pt-1.5">
           <div className="flex items-center justify-between text-[10px] text-muted">
             <span>float {new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US', { maximumFractionDigits: 4 }).format(skin.float)}</span>
-            <span>{skin.seller}</span>
           </div>
           <div className="mt-1 h-1 overflow-hidden rounded-full bg-border">
             <div
