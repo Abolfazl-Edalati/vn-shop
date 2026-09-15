@@ -110,10 +110,10 @@ export default function RareSpecials() {
                   <img src={s.image} alt={s.market_hash_name} className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-110" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-bold" style={{ color: s.rarity_color }}>
+                  <h3 className="text-sm font-bold" style={{ color: s.rarity_color }}>
                     {s.market_hash_name}
                   </h3>
-                  <p className="mt-0.5 truncate text-[11px] text-muted">{s.case}</p>
+                  <p className="mt-0.5 text-[11px] text-muted">{s.case}</p>
                   <p className="mt-1 text-xs text-muted">
                     {wearLabel(s.wear, locale)} · float {new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US', { maximumFractionDigits: 4 }).format(s.float)}
                   </p>

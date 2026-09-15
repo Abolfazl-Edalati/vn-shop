@@ -93,7 +93,7 @@ export default function SellPanel() {
                         {s.stattrak && (
                           <span className="rounded bg-orange-600/90 px-1 text-[9px] font-bold text-white">ST™</span>
                         )}
-                        <span className="truncate text-xs font-bold" style={{ color: s.rarity_color }}>
+                        <span className="text-xs font-bold" style={{ color: s.rarity_color }}>
                           {s.market_hash_name}
                         </span>
                       </span>
