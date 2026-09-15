@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { ShoppingCart, TrendingDown } from 'lucide-react';
 import type { MockSkin } from '@/data/skins';
-import { formatToman, formatUsd } from '@/data/skins';
+import { primaryPrice, secondaryPrice } from '@/data/skins';
 
 const wearLabels: Record<string, { fa: string; en: string }> = {
   'Factory New': { fa: 'نو', en: 'Factory New' },
@@ -59,18 +59,18 @@ export default function SkinCard({ skin }: { skin: MockSkin }) {
       {/* body */}
       <div className="flex flex-1 flex-col gap-1.5 p-3.5">
         <div className="flex items-baseline justify-between gap-2">
-          <h3 className="truncate text-sm font-bold" style={{ color: skin.rarity_color }}>
+          <h3 className="text-sm font-bold" style={{ color: skin.rarity_color }}>
             {skin.weapon}
           </h3>
           <span className="shrink-0 text-[10px] text-muted">{wearLabel(skin.wear, locale)}</span>
         </div>
-        <p className="truncate text-xs text-muted">{skin.pattern}</p>
+        <p className="text-xs text-muted">{skin.pattern}</p>
 
         {/* float */}
         <div className="mt-auto pt-1.5">
           <div className="flex items-center justify-between text-[10px] text-muted">
             <span>float {new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US', { maximumFractionDigits: 4 }).format(skin.float)}</span>
-            <span className="truncate">{skin.seller}</span>
+            <span>{skin.seller}</span>
           </div>
           <div className="mt-1 h-1 overflow-hidden rounded-full bg-border">
             <div
@@ -86,10 +86,11 @@ export default function SkinCard({ skin }: { skin: MockSkin }) {
         {/* price + action */}
         <div className="mt-2.5 flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-foreground">
-              {formatToman(skin.price_usd, locale)} <span className="text-[10px] font-medium text-muted">تومان</span>
+            <p className="text-sm font-bold text-foreground">
+              {primaryPrice(skin.price_usd, locale)}
+              {locale === 'fa' && <span className="text-[10px] font-medium text-muted"> تومان</span>}
             </p>
-            <p className="truncate text-[10px] text-muted">{formatUsd(skin.price_usd, locale)}</p>
+            <p className="text-[10px] text-muted">{secondaryPrice(skin.price_usd, locale)}</p>
           </div>
           <button
             className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground opacity-0 transition-all hover:bg-accent-strong group-hover:opacity-100 cursor-pointer"
