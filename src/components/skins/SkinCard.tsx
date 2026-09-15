@@ -40,8 +40,13 @@ export default function SkinCard({ skin }: { skin: MockSkin }) {
         </span>
       )}
 
-      {/* image */}
-      <div className="relative aspect-square overflow-hidden bg-[#101010] p-4">
+      {/* image with rarity glow */}
+      <div
+        className="relative aspect-square overflow-hidden p-4"
+        style={{
+          background: `radial-gradient(65% 65% at 50% 42%, ${skin.rarity_color}1f 0%, transparent 75%), #101010`,
+        }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={skin.image}
