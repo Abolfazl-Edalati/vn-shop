@@ -96,24 +96,24 @@ export default function Hero() {
         <div className="relative lg:mt-4">
           <div className="absolute -inset-3 rounded-3xl bg-accent/10 blur-2xl" />
 
-          {/* back card (smaller, offset top-start, behind) */}
+          {/* main card (bottom layer) */}
+          <div className="float-gentle peer/main relative ms-auto w-[88%] rotate-[1.5deg] lg:w-[80%]">
+            <QuoteCard
+              item={heroItem}
+              locale={locale}
+              t={t}
+            />
+          </div>
+
+          {/* second card — sits ON TOP; fades out when hovering the card underneath */}
           <div
-            className="float-gentle relative ms-0 w-[62%] lg:absolute lg:top-[-26px] lg:start-[4%] lg:w-[58%] lg:rotate-[-3deg]"
+            className="float-gentle absolute start-0 top-0 z-20 w-[62%] -rotate-3 transition-opacity duration-300 peer-hover/main:opacity-25 lg:w-[58%] lg:start-[4%] lg:top-[-26px]"
             style={{ animationDelay: '-1.75s' }}
           >
             <QuoteCard
               item={secondItem}
               locale={locale}
               compact
-              t={t}
-            />
-          </div>
-
-          {/* front card (main, overlaps) */}
-          <div className="float-gentle relative ms-auto w-[88%] lg:w-[80%] lg:rotate-[1.5deg]">
-            <QuoteCard
-              item={heroItem}
-              locale={locale}
               t={t}
             />
           </div>
