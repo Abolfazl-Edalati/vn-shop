@@ -9,8 +9,10 @@ export default function Hero() {
   const t = useTranslations('hero');
   const locale = useLocale();
 
-  // Live quote card: highest-value item
-  const heroItem = [...skins].sort((a, b) => b.price_usd - a.price_usd)[0];
+  // Live quote cards: two highest-value items
+  const byValue = [...skins].sort((a, b) => b.price_usd - a.price_usd);
+  const heroItem = byValue[0];
+  const secondItem = byValue[1];
 
   const nf = (n: number, frac = 0) =>
     new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US', { maximumFractionDigits: frac }).format(n);
@@ -90,64 +92,107 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Right: live quote card */}
+        {/* Right: live quote — two stacked floating cards */}
         <div className="relative lg:mt-4">
           <div className="absolute -inset-3 rounded-3xl bg-accent/10 blur-2xl" />
-          <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-accent">
-                <span className="relative flex size-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
-                  <span className="relative inline-flex size-2 rounded-full bg-accent" />
-                </span>
-                {t('liveQuote')}
-              </span>
-              <span className="rounded-full border border-border bg-background px-2 py-0.5 text-[10px] text-muted">
-                {heroItem.wear === 'Factory New' ? 'FN' : heroItem.wear}
-              </span>
-            </div>
 
-            {/* item image */}
-            <div className="mx-auto mt-4 aspect-[16/10] w-full max-w-[320px] float-gentle">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={heroItem.image}
-                alt={heroItem.market_hash_name}
-                className="h-full w-full object-contain drop-shadow-[0_10px_30px_rgba(232,166,90,0.25)]"
-              />
-            </div>
+          {/* back card (smaller, offset top-start, behind) */}
+          <div
+            className="float-gentle relative ms-0 w-[62%] lg:absolute lg:top-[-26px] lg:start-[4%] lg:w-[58%] lg:rotate-[-3deg]"
+            style={{ animationDelay: '-1.75s' }}
+          >
+            <QuoteCard
+              item={secondItem}
+              locale={locale}
+              compact
+              t={t}
+            />
+          </div>
 
-            <h3 className="mt-2 text-center text-sm font-bold" style={{ color: heroItem.rarity_color }}>
-              {heroItem.market_hash_name}
-            </h3>
-
-            {/* payout */}
-            <div className="mt-4 rounded-xl border border-border bg-background/60 p-4 text-center">
-              <p className="text-[10px] uppercase tracking-widest text-muted">
-                {locale === 'fa' ? 'پرداخت' : 'Payout'}
-              </p>
-              <p className="mt-1 text-3xl font-black text-foreground">
-                {primaryPrice(heroItem.price_usd, locale)}
-                {locale === 'fa' && <span className="ms-1 text-sm font-medium text-muted">تومان</span>}
-              </p>
-              <p className="text-xs text-muted">{secondaryPrice(heroItem.price_usd, locale)}</p>
-
-              {/* payment methods */}
-              <div className="mt-3 flex items-center justify-center gap-2 text-[10px] text-muted">
-                <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5">
-                  <Zap className="size-3 text-accent" /> {t('instant')}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5">
-                  <CreditCard className="size-3 text-accent" /> {t('card')}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5">
-                  <Landmark className="size-3 text-accent" /> {t('bank')}
-                </span>
-              </div>
-            </div>
+          {/* front card (main, overlaps) */}
+          <div className="float-gentle relative ms-auto w-[88%] lg:w-[80%] lg:rotate-[1.5deg]">
+            <QuoteCard
+              item={heroItem}
+              locale={locale}
+              t={t}
+            />
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function QuoteCard({
+  item,
+  locale,
+  compact = false,
+  t,
+}: {
+  item: (typeof skins)[number];
+  locale: string;
+  compact?: boolean;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  return (
+    <div
+      className={`relative overflow-hidden rounded-2xl border border-border bg-card shadow-2xl ${
+        compact ? 'p-4' : 'p-6'
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-accent">
+          <span className="relative flex size-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+            <span className="relative inline-flex size-2 rounded-full bg-accent" />
+          </span>
+          {t('liveQuote')}
+        </span>
+        <span className="rounded-full border border-border bg-background px-2 py-0.5 text-[10px] text-muted">
+          {item.wear === 'Factory New' ? 'FN' : item.wear}
+        </span>
+      </div>
+
+      {/* item image */}
+      <div className={`mx-auto mt-4 aspect-[16/10] w-full ${compact ? 'max-w-[180px]' : 'max-w-[320px]'}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={item.image}
+          alt={item.market_hash_name}
+          className="h-full w-full object-contain drop-shadow-[0_10px_30px_rgba(232,166,90,0.25)]"
+        />
+      </div>
+
+      <h3 className={`mt-2 text-center font-bold ${compact ? 'text-[11px]' : 'text-sm'}`} style={{ color: item.rarity_color }}>
+        {item.market_hash_name}
+      </h3>
+
+      {/* payout */}
+      <div className={`mt-4 rounded-xl border border-border bg-background/60 text-center ${compact ? 'p-3' : 'p-4'}`}>
+        <p className="text-[10px] uppercase tracking-widest text-muted">
+          {locale === 'fa' ? 'پرداخت' : 'Payout'}
+        </p>
+        <p className={`mt-1 font-black text-foreground ${compact ? 'text-lg' : 'text-3xl'}`}>
+          {primaryPrice(item.price_usd, locale)}
+          {locale === 'fa' && <span className={`font-medium text-muted ${compact ? 'text-[10px]' : 'ms-1 text-sm'}`}>تومان</span>}
+        </p>
+        <p className="text-xs text-muted">{secondaryPrice(item.price_usd, locale)}</p>
+
+        {/* payment methods */}
+        {!compact && (
+          <div className="mt-3 flex items-center justify-center gap-2 text-[10px] text-muted">
+            <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5">
+              <Zap className="size-3 text-accent" /> {t('instant')}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5">
+              <CreditCard className="size-3 text-accent" /> {t('card')}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5">
+              <Landmark className="size-3 text-accent" /> {t('bank')}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
