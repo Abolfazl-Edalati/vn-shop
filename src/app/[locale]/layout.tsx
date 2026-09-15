@@ -47,6 +47,7 @@ export default async function LocaleLayout({
       lang={locale}
       dir={dir}
       className={`${geistSans.variable} ${geistMono.variable} ${yekanBakh.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />

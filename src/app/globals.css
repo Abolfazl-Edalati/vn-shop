@@ -48,7 +48,8 @@
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-tile: var(--tile);
-  --font-sans: var(--font-yekan-bakh), var(--font-geist-sans), system-ui, sans-serif;
+  --font-sans:
+    var(--font-yekan-bakh), var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 }
 
@@ -86,12 +87,20 @@ html[lang="fa"] .nums {
 
 /* Ticker animation (RTL-aware) */
 @keyframes ticker-scroll-rtl {
-  from { transform: translateX(0); }
-  to { transform: translateX(50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(50%);
+  }
 }
 @keyframes ticker-scroll-ltr {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 .ticker-rtl {
   animation: ticker-scroll-rtl 40s linear infinite;
@@ -99,14 +108,21 @@ html[lang="fa"] .nums {
 .ticker-ltr {
   animation: ticker-scroll-ltr 40s linear infinite;
 }
-.ticker-rtl:hover, .ticker-ltr:hover {
+.ticker-rtl:hover,
+.ticker-ltr:hover {
   animation-play-state: paused;
 }
 
 /* Subtle entrance animation */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .fade-up {
   animation: fade-up 0.5s ease-out both;
@@ -114,8 +130,13 @@ html[lang="fa"] .nums {
 
 /* Gentle float for hero item */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 .float-gentle {
   animation: float 3.5s ease-in-out infinite;
@@ -123,8 +144,14 @@ html[lang="fa"] .nums {
 
 /* Staggered card entrance (used on filter changes) */
 @keyframes card-in {
-  from { opacity: 0; transform: translateY(14px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 .card-in {
   animation: card-in 0.45s ease-out both;
