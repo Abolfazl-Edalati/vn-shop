@@ -41,7 +41,7 @@ export default function Header() {
         {/* Main nav */}
         <nav className="hidden items-center gap-1 md:flex">
           <NavLink href="/market">{t('buy')}</NavLink>
-          <NavLink href="/sell" soon>{t('sell')}</NavLink>
+          <NavLink href="/sell">{t('sell')}</NavLink>
           <NavLink href="/trade" soon>{t('trade')}</NavLink>
           <NavLink href="/market-data" soon>{t('marketData')}</NavLink>
         </nav>
