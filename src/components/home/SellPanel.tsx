@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 import { Check, Search, Zap, Download } from 'lucide-react';
 import { getDemoInventory, primaryPrice, secondaryPrice, USD_TO_TOMAN } from '@/data/skins';
 import { wearLabel } from '@/components/skins/SkinCard';
@@ -136,14 +137,14 @@ export default function SellPanel() {
             <p className="text-[10px] text-muted">{secondaryPrice(payout, locale)}</p>
           </div>
 
-          <button className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-accent text-sm font-bold text-accent-foreground transition-colors hover:bg-accent-strong disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed" disabled={selected.size === 0}>
+          <Link href="/sell" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-accent text-sm font-bold text-accent-foreground transition-colors hover:bg-accent-strong cursor-pointer">
             <Zap className="size-4" />
-            {t('quickSell', { count: nf(selected.size) })}
-          </button>
-          <button className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background text-sm font-bold text-foreground transition-colors hover:border-accent/40 cursor-pointer">
+            {t('quickSell', { count: nf(selected.size || 1) })}
+          </Link>
+          <Link href="/sell" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background text-sm font-bold text-foreground transition-colors hover:border-accent/40 cursor-pointer">
             <Download className="size-4" />
             {t('loadMyItems')}
-          </button>
+          </Link>
 
           <p className="text-[10px] leading-relaxed text-muted">{t('demoNote')}</p>
         </aside>
