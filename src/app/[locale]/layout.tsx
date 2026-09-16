@@ -6,6 +6,7 @@ import { setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import yekanBakh from "@/fonts/yekan-bakh";
 import { themeInitScript } from "@/lib/theme";
+import { CartProvider } from "@/components/cart/CartProvider";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -53,7 +54,9 @@ export default async function LocaleLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-full flex flex-col">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <CartProvider>{children}</CartProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
