@@ -28,6 +28,7 @@ export type Order = {
 };
 
 const KEY = 'vn-orders';
+const SELL_KEY = 'vn-sell-orders';
 
 function readAll(): Order[] {
   try {
@@ -65,4 +66,44 @@ export function updateOrderStep(id: string, step: number): Order | undefined {
 export function newOrderId(): string {
   const n = Math.floor(100000 + Math.random() * 899999);
   return `VN-${n}`;
+}
+
+/* ------------------------------------------------------------------ *
+ * Sell orders — a user selling their items TO VN Shop (instant sell).
+ * ------------------------------------------------------------------ */
+
+export type SellOrder = {
+  id: string;
+  created_at: number;
+  lines: OrderLine[];
+  /** market value of the items being sold */
+  total_usd: number;
+  total_toman: number;
+  /** what the user actually receives, after the VN Shop fee */
+  payout_usd: number;
+  payout_method: string;
+  payout_target: string;
+  /** payout rate applied, 0..1 */
+  rate: number;
+  /** escrow/handshake step, 0..3 */
+  step: number;
+};
+
+export function saveSellOrder(order: SellOrder): void {
+  try {
+    const raw = localStorage.getItem(SELL_KEY);
+    const all = raw ? (JSON.parse(raw) as SellOrder[]) : [];
+    const next = [order, ...(Array.isArray(all) ? all : [])].slice(0, 30);
+    localStorage.setItem(SELL_KEY, JSON.stringify(next));
+  } catch {}
+}
+
+export function getSellOrder(id: string): SellOrder | undefined {
+  try {
+    const raw = localStorage.getItem(SELL_KEY);
+    const all = raw ? (JSON.parse(raw) as SellOrder[]) : [];
+    return all.find((o) => o.id === id);
+  } catch {
+    return undefined;
+  }
 }
