@@ -2,9 +2,10 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { ShoppingCart, TrendingDown } from 'lucide-react';
+import { ShoppingCart, TrendingDown, Check } from 'lucide-react';
 import type { MockSkin } from '@/data/skins';
 import { primaryPrice, secondaryPrice } from '@/data/skins';
+import { useCart } from '@/components/cart/CartProvider';
 
 const wearLabels: Record<string, { fa: string; en: string }> = {
   'Factory New': { fa: 'نو', en: 'Factory New' },
@@ -24,6 +25,8 @@ export function wearLabel(wear: string, _locale?: string): string {
 export default function SkinCard({ skin }: { skin: MockSkin }) {
   const locale = useLocale();
   const t = useTranslations('skinCard');
+  const cart = useCart();
+  const inCart = cart.ready && cart.has(skin.id);
 
   return (
     <Link
@@ -97,11 +100,18 @@ export default function SkinCard({ skin }: { skin: MockSkin }) {
             <p className="text-[10px] text-muted">{secondaryPrice(skin.price_usd, locale)}</p>
           </div>
           <button
-            className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground opacity-0 transition-all hover:bg-accent-strong group-hover:opacity-100 cursor-pointer"
+            className={`inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-all cursor-pointer ${
+              inCart
+                ? 'bg-emerald-500 text-white'
+                : 'bg-accent text-accent-foreground opacity-0 hover:bg-accent-strong group-hover:opacity-100'
+            }`}
             aria-label={t('addToCart')}
-            onClick={(e) => e.preventDefault()}
+            onClick={(e) => {
+              e.preventDefault();
+              cart.add(skin.id);
+            }}
           >
-            <ShoppingCart className="size-4" />
+            {inCart ? <Check className="size-4" /> : <ShoppingCart className="size-4" />}
           </button>
         </div>
       </div>

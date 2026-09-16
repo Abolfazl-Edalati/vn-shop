@@ -3,15 +3,17 @@
 import { useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { Search, Bell, ChevronDown } from 'lucide-react';
+import { Search, Bell, ShoppingCart } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import SteamIcon from '@/components/icons/SteamIcon';
+import { useCart } from '@/components/cart/CartProvider';
 
 export default function Header() {
   const t = useTranslations('nav');
   const locale = useLocale();
   const searchRef = useRef<HTMLInputElement>(null);
+  const cart = useCart();
 
   // Ctrl+K / Cmd+K focuses the site search (overrides browser shortcut)
   useEffect(() => {
@@ -65,6 +67,18 @@ export default function Header() {
             <span className="text-xs font-medium">$</span>
           </button>
           <ThemeToggle />
+          <Link
+            href="/cart"
+            className="relative rounded-md px-2 py-1.5 text-muted hover:bg-card-hover hover:text-foreground transition-colors"
+            aria-label={locale === 'fa' ? 'سبد خرید' : 'Cart'}
+          >
+            <ShoppingCart className="size-4" />
+            {cart.ready && cart.count > 0 && (
+              <span className="absolute -end-0.5 -top-0.5 grid min-w-4 place-items-center rounded-full bg-accent px-1 text-[9px] font-black leading-4 text-accent-foreground">
+                {new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US').format(cart.count)}
+              </span>
+            )}
+          </Link>
           <button className="relative rounded-md px-2 py-1.5 text-muted hover:bg-card-hover hover:text-foreground transition-colors cursor-pointer" aria-label={t('notifications')}>
             <Bell className="size-4" />
             <span className="absolute end-1.5 top-1.5 size-1.5 rounded-full bg-accent" />

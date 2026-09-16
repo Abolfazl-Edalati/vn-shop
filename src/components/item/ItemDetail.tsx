@@ -2,15 +2,20 @@
 
 import { useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Eye, ShieldCheck, Lock, BadgeCheck, Send, Banknote } from 'lucide-react';
+import { Eye, ShieldCheck, Lock, BadgeCheck, Send, Banknote, ShoppingCart, Check } from 'lucide-react';
 import SteamIcon from '@/components/icons/SteamIcon';
 import { primaryPrice, secondaryPrice, type MockSkin } from '@/data/skins';
 import { wearLabel } from '@/components/skins/SkinCard';
+import { useCart } from '@/components/cart/CartProvider';
+import { useRouter } from '@/i18n/routing';
 
 export default function ItemDetail({ skin }: { skin: MockSkin }) {
   const t = useTranslations('skinCard');
   const tc = useTranslations('custody');
   const locale = useLocale();
+  const cart = useCart();
+  const router = useRouter();
+  const inCart = cart.ready && cart.has(skin.id);
   const L = (fa: string, en: string) => (locale === 'fa' ? fa : en);
   const nf = (n: number, frac = 0) =>
     new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US', { maximumFractionDigits: frac }).format(n);
@@ -150,9 +155,36 @@ export default function ItemDetail({ skin }: { skin: MockSkin }) {
               )}
             </div>
 
-            <button className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-accent text-sm font-black text-accent-foreground transition-colors hover:bg-accent-strong cursor-pointer">
-              <SteamIcon className="size-4" />
-              {L('همین حالا بخر', 'Buy now')}
+            <button
+              onClick={() => cart.add(skin.id, 1)}
+              disabled={inCart}
+              className={`mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-black transition-colors cursor-pointer ${
+                inCart
+                  ? 'bg-emerald-500 text-white cursor-default'
+                  : 'bg-accent text-accent-foreground hover:bg-accent-strong'
+              }`}
+            >
+              {inCart ? (
+                <>
+                  <Check className="size-4" />
+                  {L('در سبد خرید است', 'In your cart')}
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="size-4" />
+                  {L('افزودن به سبد خرید', 'Add to cart')}
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                if (!inCart) cart.add(skin.id, 1);
+                router.push('/checkout');
+              }}
+              className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-accent/50 bg-accent/10 text-xs font-black text-accent transition-colors hover:bg-accent/20 cursor-pointer"
+            >
+              <SteamIcon className="size-3.5" />
+              {L('خرید سریع', 'Buy now')}
             </button>
             <button className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-background text-xs font-bold text-foreground transition-colors hover:border-accent/40 cursor-pointer">
               <Eye className="size-3.5" />
