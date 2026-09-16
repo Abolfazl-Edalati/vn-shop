@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from 'react';
 import { useLocale } from 'next-intl';
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import {
   Search, Check, Zap, ArrowLeft, ArrowRight, Clock, ShieldCheck, BadgeCheck,
-  Wallet, TrendingUp, Info, ChevronRight, Loader2, CheckCircle2, Banknote,
+  Wallet, TrendingUp, Info, Loader2, Banknote,
 } from 'lucide-react';
-import { getDemoInventory, USD_TO_TOMAN, type MockSkin } from '@/data/skins';
+import { getDemoInventory, USD_TO_TOMAN } from '@/data/skins';
 import { wearLabel } from '@/components/skins/SkinCard';
 import { newOrderId, saveSellOrder } from '@/lib/orders';
 
@@ -29,6 +29,7 @@ const PAYOUTS: { key: Payout; fa: string; en: string; noteFa: string; noteEn: st
 
 export default function SellView() {
   const locale = useLocale();
+  const router = useRouter();
   const L = (fa: string, en: string) => (locale === 'fa' ? fa : en);
   const nf = (n: number, frac = 0) =>
     new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US', { maximumFractionDigits: frac }).format(n);
@@ -40,7 +41,7 @@ export default function SellView() {
   const [payout, setPayout] = useState<Payout>('wallet');
   const [payoutTarget, setPayoutTarget] = useState('');
   const [agreed, setAgreed] = useState(false);
-  const [stage, setStage] = useState<'select' | 'sending' | 'done'>('select');
+  const [stage, setStage] = useState<'select' | 'sending'>('select');
   const [error, setError] = useState<string | null>(null);
 
   const filtered = useMemo(
@@ -107,9 +108,9 @@ export default function SellView() {
         payout_method: payout,
         payout_target: payoutTarget.trim(),
         rate,
-        step: 1,
+        step: 0, // 0 = offer sent, waiting for the user to accept in Steam
       });
-      setStage('done');
+      router.push(`/sell-order/${id}`);
     }, 1400);
   }
 
@@ -136,66 +137,6 @@ export default function SellView() {
             <span>{L('مبلغ دریافتی', 'Your payout')}</span>
             <b className="text-accent">{nf(Math.round(payoutUsd * USD_TO_TOMAN))} {L('تومان', 'T')}</b>
           </p>
-        </div>
-      </div>
-    );
-  }
-
-  /* ---------- success ---------- */
-  if (stage === 'done') {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
-        <div className="rounded-2xl border border-border bg-card p-7 text-center">
-          <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-emerald-500/15">
-            <CheckCircle2 className="size-6 text-emerald-400" />
-          </span>
-          <h1 className="mt-4 text-lg font-black">{L('درخواست فروش ثبت شد', 'Sell request submitted')}</h1>
-          <p className="mt-2 text-xs leading-relaxed text-muted">
-            {L(
-              'ترید آفر برات ارسال شد. به‌محض تأیید در استیم، مبلغ به روش انتخابی واریز می‌شه.',
-              'A trade offer has been sent to you. As soon as you accept it in Steam, your payout is released.'
-            )}
-          </p>
-
-          <div className="mt-5 space-y-2 rounded-xl border border-border bg-background/60 p-4 text-start">
-            <p className="flex justify-between text-xs text-muted">
-              <span>{L('مبلغ دریافتی', 'Your payout')}</span>
-              <b className="text-base font-black text-accent">
-                {nf(Math.round(payoutUsd * USD_TO_TOMAN))}
-                {locale === 'fa' && <span className="ms-1 text-xs font-medium text-muted">تومان</span>}
-              </b>
-            </p>
-            <p className="flex justify-between text-xs text-muted">
-              <span>{L('نرخ فروش', 'Payout rate')}</span>
-              <b className="text-foreground">{nf(rate * 100, 1)}%</b>
-            </p>
-            <p className="flex justify-between text-xs text-muted">
-              <span>{L('روش دریافت', 'Payout method')}</span>
-              <b className="text-foreground">
-                {(() => { const p = PAYOUTS.find((x) => x.key === payout)!; return L(p.fa, p.en); })()}
-              </b>
-            </p>
-          </div>
-
-          <div className="mt-5 flex flex-wrap justify-center gap-2">
-            <Link
-              href="/market"
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-5 text-xs font-black text-accent-foreground hover:bg-accent-strong transition-colors"
-            >
-              {L('ادامه خرید', 'Keep shopping')}
-              <Back className="size-3.5" />
-            </Link>
-            <button
-              onClick={() => {
-                setStage('select');
-                setSelected(new Set());
-                setAgreed(false);
-              }}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-border px-5 text-xs font-bold text-muted hover:border-accent/40 hover:text-foreground transition-colors cursor-pointer"
-            >
-              {L('فروش آیتم‌های بیشتر', 'Sell more items')}
-            </button>
-          </div>
         </div>
       </div>
     );
