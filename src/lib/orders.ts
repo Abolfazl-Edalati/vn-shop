@@ -107,3 +107,17 @@ export function getSellOrder(id: string): SellOrder | undefined {
     return undefined;
   }
 }
+
+export function updateSellOrderStep(id: string, step: number): SellOrder | undefined {
+  try {
+    const raw = localStorage.getItem(SELL_KEY);
+    const all = raw ? (JSON.parse(raw) as SellOrder[]) : [];
+    const found = all.find((o) => o.id === id);
+    if (!found) return undefined;
+    found.step = Math.max(0, Math.min(2, step));
+    localStorage.setItem(SELL_KEY, JSON.stringify(all));
+    return found;
+  } catch {
+    return undefined;
+  }
+}
