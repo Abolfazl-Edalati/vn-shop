@@ -7,6 +7,7 @@ import { Check, Search, Zap, Download, Lock, ShieldCheck } from 'lucide-react';
 import { getDemoInventory, primaryPrice, secondaryPrice, USD_TO_TOMAN } from '@/data/skins';
 import { wearLabel } from '@/components/skins/SkinCard';
 import { getProfile } from '@/lib/orders';
+import { useSession } from '@/components/session/SessionProvider';
 import SteamIcon from '@/components/icons/SteamIcon';
 
 const PAYOUT_RATE = 0.925; // mock: after ~7.5% total haircut
@@ -15,12 +16,8 @@ export default function SellPanel() {
   const t = useTranslations('sell');
   const locale = useLocale();
   const items = getDemoInventory();
-  const [signedIn, setSignedIn] = useState(false);
-
-  // the panel renders for everyone, but inventory is locked until signed in
-  useEffect(() => {
-    setSignedIn(!!getProfile());
-  }, []);
+  const { user, loading, signInWithSteam } = useSession();
+  const signedIn = !!user;
 
   const [selected, setSelected] = useState<Set<string>>(
     new Set(items.slice(0, 2).map((i) => i.id))
@@ -71,13 +68,13 @@ export default function SellPanel() {
                   ? 'اسکین‌های اکانت استیمت رو می‌خوایم نشون بدیم و قیمت بگیریم.'
                   : 'We’ll pull your Steam inventory skins and price them instantly.'}
               </p>
-              <Link
-                href="/account"
+              <button
+                onClick={signInWithSteam}
                 className="mt-1 inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-5 text-xs font-black text-accent-foreground transition-colors hover:bg-accent-strong cursor-pointer"
               >
                 <SteamIcon className="size-4" />
                 {locale === 'fa' ? 'ورود با استیم' : 'Sign in with Steam'}
-              </Link>
+              </button>
             </div>
           )}
           {/* search/select row */}
