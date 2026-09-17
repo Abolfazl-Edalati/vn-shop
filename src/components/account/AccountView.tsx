@@ -16,6 +16,23 @@ import SteamIcon from '@/components/icons/SteamIcon';
 
 const DEMO_WALLET_TOMAN = 12_500_000;
 
+function fallbackCopy(text: string, done: () => void) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    done();
+  } catch {
+    /* clipboard unavailable — the button still shows the copied state briefly */
+    done();
+  }
+}
+
 function readOrders(): Order[] {
   try {
     const raw = localStorage.getItem('vn-orders');
@@ -75,13 +92,17 @@ export default function AccountView() {
 
   function copyTradeUrl() {
     if (!profile) return;
-    navigator.clipboard
-      ?.writeText(profile.tradeUrl)
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1600);
-      })
-      .catch(() => {});
+    const done = () => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    };
+    // navigator.clipboard may be unavailable (insecure context / headless),
+    // so fall back to a legacy execCommand copy before giving up silently.
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(profile.tradeUrl).then(done).catch(() => fallbackCopy(profile!.tradeUrl, done));
+    } else {
+      fallbackCopy(profile.tradeUrl, done);
+    }
   }
 
   /* ---------- signed-out ---------- */
