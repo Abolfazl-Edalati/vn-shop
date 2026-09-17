@@ -1,20 +1,39 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+// Account page — real Steam session + Prisma-backed orders/wallet.
+
+import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import {
-  Package, TrendingUp, Wallet, ArrowDownToLine, ArrowUpFromLine, LogOut, User,
-  ShoppingBag, Coins, ChevronRight, CheckCircle2, Clock, Copy, Check,
+  Package, TrendingUp, Wallet, ArrowDownToLine, LogOut, ShoppingBag, Coins,
+  ChevronRight, CheckCircle2, Clock, Copy, Check,
 } from 'lucide-react';
-import {
-  clearProfile, DEMO_PROFILE, getProfile, getWalletToman, setProfile, setWalletToman,
-  type Order, type Profile, type SellOrder,
-} from '@/lib/orders';
+import { useSession } from '@/components/session/SessionProvider';
 import { USD_TO_TOMAN } from '@/data/skins';
 import SteamIcon from '@/components/icons/SteamIcon';
 
-const DEMO_WALLET_TOMAN = 12_500_000;
+interface OrderRow {
+  id: string;
+  createdAt: string;
+  status: string;
+  escrowStep: number;
+  paymentMethod: string;
+  totalUsd: string;
+  totalToman: string;
+  itemCount: number;
+  firstItem: string | null;
+}
+interface SellRow {
+  id: string;
+  createdAt: string;
+  step: number;
+  payoutMethod: string;
+  payoutUsd: string;
+  payoutToman: string;
+  itemCount: number;
+  firstItem: string | null;
+}
 
 function fallbackCopy(text: string, done: () => void) {
   try {
@@ -28,325 +47,342 @@ function fallbackCopy(text: string, done: () => void) {
     ta.remove();
     done();
   } catch {
-    /* clipboard unavailable — the button still shows the copied state briefly */
+    /* clipboard unavailable — still fire the feedback so the UX is not silent */
     done();
-  }
-}
-
-function readOrders(): Order[] {
-  try {
-    const raw = localStorage.getItem('vn-orders');
-    if (!raw) return [];
-    const all = JSON.parse(raw) as Order[];
-    return Array.isArray(all) ? all : [];
-  } catch {
-    return [];
-  }
-}
-
-function readSellOrders(): SellOrder[] {
-  try {
-    const raw = localStorage.getItem('vn-sell-orders');
-    if (!raw) return [];
-    const all = JSON.parse(raw) as SellOrder[];
-    return Array.isArray(all) ? all : [];
-  } catch {
-    return [];
   }
 }
 
 export default function AccountView() {
   const locale = useLocale();
   const L = (fa: string, en: string) => (locale === 'fa' ? fa : en);
-  const nf = (n: number, frac = 0) =>
-    new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US', { maximumFractionDigits: frac }).format(n);
-  const dt = (ts: number) =>
-    new Intl.DateTimeFormat(locale === 'fa' ? 'fa-IR' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(ts);
+  const { user, loading, signOut, refresh } = useSession();
 
-  const [profile, setP] = useState<Profile | null>(null);
-  const [wallet, setW] = useState<number>(0);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [sells, setSells] = useState<SellOrder[]>([]);
+  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [sells, setSells] = useState<SellRow[]>([]);
   const [tab, setTab] = useState<'purchases' | 'sales'>('purchases');
   const [copied, setCopied] = useState(false);
+  const [tradeUrlInput, setTradeUrlInput] = useState('');
+  const [savingUrl, setSavingUrl] = useState(false);
+  const [toppingUp, setToppingUp] = useState(false);
 
-  // hydrate everything from localStorage on mount
+  const dt = (iso: string) =>
+    new Intl.DateTimeFormat(locale === 'fa' ? 'fa-IR' : 'en-US', {
+      year: 'numeric', month: 'short', day: 'numeric',
+    }).format(new Date(iso));
+
+  const nf = (n: number) => new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US').format(n);
+
   useEffect(() => {
-    const p = getProfile();
-    setP(p);
-    const existing = getWalletToman();
-    if (!existing) setWalletToman(DEMO_WALLET_TOMAN);
-    setW(existing || DEMO_WALLET_TOMAN);
-    setOrders(readOrders());
-    setSells(readSellOrders());
-  }, []);
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/orders', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setOrders(data.orders ?? []);
+        setSells(data.sellOrders ?? []);
+      } catch {
+        /* keep empty lists on network failure */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
 
-  const stats = useMemo(() => {
-    const bought = orders.reduce((s, o) => s + o.total_usd, 0);
-    const sold = sells.reduce((s, o) => s + o.payout_usd, 0);
-    return { bought, sold, net: sold - bought };
-  }, [orders, sells]);
+  useEffect(() => {
+    if (user?.tradeUrl) setTradeUrlInput(user.tradeUrl);
+  }, [user?.tradeUrl]);
 
-  const activeBuys = orders.filter((o) => o.step < 3).length;
-  const activeSells = sells.filter((s) => s.step < 2).length;
+  const walletToman = user ? Number(user.wallet) : 0;
+  const totalPurchases = orders.length;
+  const totalSales = sells.length;
+  const netUsd =
+    orders.reduce((s, o) => s + Number(o.totalUsd), 0) -
+    sells.reduce((s, o) => s + Number(o.payoutUsd), 0);
 
-  function copyTradeUrl() {
-    if (!profile) return;
-    const done = () => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
-    };
-    // navigator.clipboard may be unavailable (insecure context / headless),
-    // so fall back to a legacy execCommand copy before giving up silently.
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(profile.tradeUrl).then(done).catch(() => fallbackCopy(profile!.tradeUrl, done));
-    } else {
-      fallbackCopy(profile.tradeUrl, done);
-    }
+  /* ---------- loading skeleton ---------- */
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
+        <div className="mx-auto h-14 w-14 animate-pulse rounded-2xl bg-card" />
+        <div className="mx-auto mt-6 h-5 w-48 animate-pulse rounded bg-card" />
+        <div className="mx-auto mt-3 h-3 w-64 animate-pulse rounded bg-card" />
+      </div>
+    );
   }
 
-  /* ---------- signed-out ---------- */
-  if (!profile) {
+  /* ---------- signed out ---------- */
+  if (!user) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6">
-        <span className="mx-auto grid size-16 place-items-center rounded-2xl border border-border bg-card">
-          <User className="size-6 text-muted" />
-        </span>
-        <h1 className="mt-5 text-xl font-black">{L('حساب کاربری', 'Your account')}</h1>
-        <p className="mt-2 text-xs leading-relaxed text-muted">
-          {L(
-            'با اکانت استیم وارد شو تا سفارش‌ها، فروش‌ها و کیف پولت رو ببینی.',
-            'Sign in with Steam to see your orders, sales and wallet.'
-          )}
-        </p>
-
-        <div className="mt-6 rounded-2xl border border-border bg-card p-6 text-start">
-          <div className="flex items-center gap-3">
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#1b2838]">
-              <SteamIcon className="size-5 text-white" />
-            </span>
-            <div>
-              <p className="text-sm font-black">{L('ورود با استیم', 'Sign in with Steam')}</p>
-              <p className="text-[10px] text-muted">
-                {L('فقط برای نمایش پروفایل در نسخه دمو', 'Demo only — just to show the profile')}
-              </p>
-            </div>
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+        <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-8 text-center">
+          <div className="mx-auto grid size-16 place-items-center rounded-3xl bg-accent/10">
+            <SteamIcon className="size-7 text-accent" />
           </div>
-
-          <button
-            onClick={() => {
-              setProfile(DEMO_PROFILE);
-              setP(DEMO_PROFILE);
-              if (!getWalletToman()) setWalletToman(DEMO_WALLET_TOMAN);
-              setW(DEMO_WALLET_TOMAN);
-            }}
-            className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#1b2838] text-sm font-black text-white transition-colors hover:bg-[#2a475e] cursor-pointer"
+          <h1 className="mt-5 text-lg font-black">
+            {L('وارد شوید', 'Sign in')}
+          </h1>
+          <p className="mt-2 text-xs leading-relaxed text-muted">
+            {L(
+              'برای دیدن خریدها، فروش‌ها و کیف پول باید با استیم وارد بشی.',
+              'Sign in with Steam to see your purchases, sales and wallet.',
+            )}
+          </p>
+          <a
+            href="/api/auth/steam"
+            className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#1b2838] text-sm font-black text-white transition-colors hover:bg-[#2a475e]"
           >
             <SteamIcon className="size-4" />
             {L('ورود با استیم', 'Sign in with Steam')}
-          </button>
-          <p className="mt-3 text-center text-[10px] text-muted">
-            {L(
-              'اطلاعات واقعی استیم استفاده نمی‌شه — این فقط دموی فاز اول است.',
-              'No real Steam data is used — phase-one demo only.'
-            )}
-          </p>
+          </a>
         </div>
       </div>
     );
   }
 
-  /* ---------- signed-in ---------- */
+  /* ---------- signed in ---------- */
+  const saveTradeUrl = async () => {
+    setSavingUrl(true);
+    try {
+      const res = await fetch('/api/account/trade-url', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tradeUrl: tradeUrlInput.trim() }),
+      });
+      if (res.ok) await refresh();
+    } catch {
+      /* ignore — the input still holds the value */
+    } finally {
+      setSavingUrl(false);
+    }
+  };
+
+  const topUp = async () => {
+    setToppingUp(true);
+    try {
+      const res = await fetch('/api/wallet/topup', { method: 'POST' });
+      if (res.ok) await refresh();
+    } catch {
+      /* ignore */
+    } finally {
+      setToppingUp(false);
+    }
+  };
+
+  const stats = [
+    { icon: ShoppingBag, label: L('خریدها', 'Purchases'), value: nf(totalPurchases) },
+    { icon: Coins, label: L('فروش‌ها', 'Sales'), value: nf(totalSales) },
+    {
+      icon: TrendingUp, label: L('تراز خالص', 'Net balance'),
+      value: `${netUsd >= 0 ? '+' : '−'}${nf(Math.abs(Math.round(netUsd)))}$`,
+      tone: netUsd >= 0 ? 'up' : 'down',
+    },
+    {
+      icon: Wallet, label: L('موجودی کیف پول', 'Wallet'),
+      value: `${nf(walletToman)} ${L('تومان', 'Toman')}`,
+    },
+  ];
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       {/* identity */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={profile.avatar} alt={profile.name} className="size-14 rounded-2xl border border-border object-cover" />
+          {user.avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.avatar} alt={user.name} className="size-14 rounded-2xl border border-border object-cover" />
+          ) : (
+            <span className="grid size-14 place-items-center rounded-2xl border border-border bg-accent/10 text-lg font-black text-accent">
+              {user.name.charAt(0).toUpperCase()}
+            </span>
+          )}
           <div>
             <h1 className="flex items-center gap-2 text-lg font-black">
-              {profile.name}
-              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-300">
+              {user.name}
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-500">
                 <CheckCircle2 className="size-2.5" />
                 {L('تأیید شده', 'Verified')}
               </span>
             </h1>
             <p className="mt-1 text-[11px] text-muted" dir="ltr">
-              ID: {profile.steamId} · {L('عضویت', 'Joined')} {dt(profile.joinedAt)}
+              ID: {user.steamId} · {L('عضویت', 'Joined')} {dt(user.createdAt)}
             </p>
           </div>
         </div>
 
         <button
-          onClick={() => {
-            clearProfile();
-            setP(null);
-          }}
-          className="inline-flex h-10 items-center gap-2 rounded-xl border border-border px-4 text-xs font-bold text-muted transition-colors hover:border-red-500/50 hover:text-red-400 cursor-pointer"
+          onClick={signOut}
+          className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3.5 text-xs font-bold text-muted transition-colors hover:border-red-500/40 hover:text-red-500 cursor-pointer"
         >
-          <LogOut className="size-3.5" />
+          <LogOut className="size-4" />
           {L('خروج', 'Sign out')}
         </button>
       </div>
 
-      {/* stat cards */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card
-          Icon={ShoppingBag}
-          label={L('کل خریدها', 'Total purchases')}
-          value={nf(Math.round(stats.bought * USD_TO_TOMAN))}
-          unit={L('تومان', 'Toman')}
-        />
-        <Card
-          Icon={Coins}
-          label={L('کل فروش‌ها', 'Total sales')}
-          value={nf(Math.round(stats.sold * USD_TO_TOMAN))}
-          unit={L('تومان', 'Toman')}
-          accent
-        />
-        <Card
-          Icon={TrendingUp}
-          label={L('تراز خالص', 'Net flow')}
-          value={nf(Math.round(stats.net * USD_TO_TOMAN))}
-          unit={L('تومان', 'Toman')}
-          hint={stats.net >= 0 ? L('سود خالص', 'Net profit') : L('هزینه خالص', 'Net spend')}
-        />
-        <Card Icon={Wallet} label={L('موجودی کیف پول', 'Wallet balance')} value={nf(wallet)} unit={L('تومان', 'Toman')}>
-          <div className="mt-3 flex gap-2">
-            <button
-              onClick={() => {
-                const next = wallet + 1_000_000;
-                setWalletToman(next);
-                setW(next);
-              }}
-              className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 text-[10px] font-bold text-accent transition-colors hover:bg-accent/20 cursor-pointer"
-            >
-              <ArrowDownToLine className="size-3" />
-              {L('شارژ', 'Top up')}
-            </button>
-            <Link
-              href="/sell"
-              className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border text-[10px] font-bold text-muted transition-colors hover:border-accent/40 hover:text-foreground"
-            >
-              <ArrowUpFromLine className="size-3" />
-              {L('نقد کردن', 'Cash out')}
-            </Link>
+      {/* stats */}
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {stats.map((s) => (
+          <div key={s.label} className="rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center gap-2 text-muted">
+              <s.icon className="size-4" />
+              <span className="text-[10px] font-bold uppercase tracking-wide">{s.label}</span>
+            </div>
+            <p className="mt-2 text-base font-black tabular-nums" dir="ltr">{s.value}</p>
           </div>
-        </Card>
+        ))}
       </div>
 
-      {/* trade link */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-background/60">
-            <SteamIcon className="size-4 text-accent" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-[11px] font-bold text-foreground/90">{L('لینک ترید استیم', 'Steam trade URL')}</p>
-            <p dir="ltr" className="mt-0.5 truncate text-[10px] text-muted">
-              {profile.tradeUrl || L('تنظیم نشده', 'Not set')}
+      {/* trade url */}
+      <div className="mt-4 rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-bold">{L('لینک ترید استیم', 'Steam trade URL')}</h2>
+            <p className="mt-1 text-[10px] text-muted">
+              {L('برای تحویل آیتم‌ها لازمه', 'Required so we can deliver your items')}
             </p>
           </div>
+          <button
+            onClick={() => fallbackCopy(tradeUrlInput, () => {
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1600);
+            })}
+            disabled={!tradeUrlInput}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-[10px] font-bold text-muted transition-colors hover:text-foreground disabled:opacity-40 cursor-pointer disabled:cursor-default"
+          >
+            {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+            {copied ? L('کپی شد', 'Copied') : L('کپی', 'Copy')}
+          </button>
         </div>
-        <button
-          onClick={copyTradeUrl}
-          className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-border px-3.5 text-[11px] font-bold text-muted transition-colors hover:border-accent/40 hover:text-foreground cursor-pointer"
-        >
-          {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
-          {copied ? L('کپی شد', 'Copied') : L('کپی', 'Copy')}
-        </button>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <input
+            value={tradeUrlInput}
+            onChange={(e) => setTradeUrlInput(e.target.value)}
+            dir="ltr"
+            placeholder="https://steamcommunity.com/tradeoffer/new/?partner=…"
+            className="h-10 flex-1 rounded-lg border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none"
+          />
+          <button
+            onClick={saveTradeUrl}
+            disabled={savingUrl || !tradeUrlInput.trim()}
+            className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-accent px-5 text-xs font-bold text-accent-foreground transition-colors hover:bg-accent-strong disabled:opacity-40 cursor-pointer disabled:cursor-default"
+          >
+            {savingUrl ? L('ذخیره…', 'Saving…') : L('ذخیره', 'Save')}
+          </button>
+        </div>
       </div>
 
-      {/* activity */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="flex items-center gap-1 border-b border-border p-2">
-          <Tab active={tab === 'purchases'} onClick={() => setTab('purchases')} count={orders.length}>
-            <Package className="size-3.5" />
-            {L('خریدها', 'Purchases')}
-          </Tab>
-          <Tab active={tab === 'sales'} onClick={() => setTab('sales')} count={sells.length}>
-            <Coins className="size-3.5" />
-            {L('فروش‌ها', 'Sales')}
-          </Tab>
-          <span className="ms-auto px-2 text-[10px] text-muted">
-            {tab === 'purchases'
-              ? `${nf(activeBuys)} ${L('در حال انجام', 'in progress')}`
-              : `${nf(activeSells)} ${L('در حال انجام', 'in progress')}`}
-          </span>
+      {/* wallet actions */}
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          onClick={topUp}
+          disabled={toppingUp}
+          className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-4 text-xs font-bold transition-colors hover:border-accent/40 cursor-pointer"
+        >
+          <ArrowDownToLine className="size-4" />
+          {toppingUp ? '…' : L('شارژ کیف پول (دمو)', 'Top up wallet (demo)')}
+        </button>
+        <Link
+          href="/sell"
+          className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-4 text-xs font-bold transition-colors hover:border-accent/40 cursor-pointer"
+        >
+          <Package className="size-4" />
+          {L('فروش اسکین به ما', 'Sell skins to us')}
+        </Link>
+      </div>
+
+      {/* history */}
+      <div className="mt-8">
+        <div className="flex items-center gap-2 border-b border-border">
+          {(['purchases', 'sales'] as const).map((k) => (
+            <button
+              key={k}
+              onClick={() => setTab(k)}
+              className={`-mb-px border-b-2 px-4 py-3 text-xs font-bold transition-colors cursor-pointer ${
+                tab === k
+                  ? 'border-accent text-foreground'
+                  : 'border-transparent text-muted hover:text-foreground'
+              }`}
+            >
+              {k === 'purchases' ? L('خریدها', 'Purchases') : L('فروش‌ها', 'Sales')}
+              <span className="ms-1.5 rounded-full bg-card px-1.5 py-0.5 text-[9px] text-muted">
+                {k === 'purchases' ? nf(totalPurchases) : nf(totalSales)}
+              </span>
+            </button>
+          ))}
         </div>
 
         {tab === 'purchases' ? (
           orders.length === 0 ? (
-            <Empty Icon={Package} title={L('هنوز خریدی نکردی', 'No purchases yet')} cta={L('پیمایش بازار', 'Browse the market')} href="/market" />
+            <Empty
+              icon={ShoppingBag}
+              title={L('هنوز خریدی نداشتی', 'No purchases yet')}
+              cta={L('رفتن به بازار', 'Browse the market')}
+              href="/market"
+            />
           ) : (
             <ul className="divide-y divide-border">
-              {orders.map((o) => {
-                const done = o.step >= 3;
-                return (
-                  <li key={o.id}>
-                    <Link href={`/order/${o.id}`} className="flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-card-hover">
-                      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-background/60">
-                        <Package className="size-4 text-accent" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-black" dir="ltr">
-                          {nf(o.lines.length)} {L('آیتم', 'items')} · {o.lines[0]?.name ?? '—'}
-                        </p>
-                        <p className="mt-1 flex items-center gap-1.5 text-[10px] text-muted">
-                          {done ? <CheckCircle2 className="size-3 text-emerald-400" /> : <Clock className="size-3 text-accent" />}
-                          <span dir="ltr">{o.id}</span> · {dt(o.created_at)}
-                        </p>
-                      </div>
-                      <div className="hidden shrink-0 text-end sm:block">
-                        <p className="text-xs font-black">
-                          {nf(o.total_toman)} {L('تومان', 'Toman')}
-                        </p>
-                        <p className="text-[9px] text-muted">${nf(o.total_usd, 2)}</p>
-                      </div>
-                      <Pill done={done} label={done ? L('تحویل شد', 'Delivered') : `${nf(o.step + 1)}/۴`} />
-                      <Chevron locale={locale} />
-                    </Link>
-                  </li>
-                );
-              })}
+              {orders.map((o) => (
+                <li key={o.id}>
+                  <Link
+                    href={`/order/${o.id}`}
+                    className="flex flex-wrap items-center justify-between gap-3 py-4 transition-colors hover:bg-card/50 px-2 -mx-2 rounded-lg cursor-pointer"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold">
+                        {o.firstItem ?? L('سفارش', 'Order')}
+                        {o.itemCount > 1 && <span className="text-muted"> +{nf(o.itemCount - 1)}</span>}
+                      </p>
+                      <p className="mt-1 text-[10px] text-muted" dir="ltr">
+                        {o.id} · {dt(o.createdAt)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <StatusPill kind="order" step={o.escrowStep} status={o.status} L={L} />
+                      <b className="text-sm tabular-nums" dir="ltr">
+                        {nf(Math.round(Number(o.totalUsd)))}$
+                      </b>
+                      <ChevronRight className="size-4 rotate-180 text-muted rtl:rotate-0" />
+                    </div>
+                  </Link>
+                </li>
+              ))}
             </ul>
           )
         ) : sells.length === 0 ? (
-          <Empty Icon={Coins} title={L('هنوز چیزی نفروختی', 'No sales yet')} cta={L('فروش آیتم‌ها', 'Sell your items')} href="/sell" />
+          <Empty
+            icon={Coins}
+            title={L('هنوز فروشی نداشتی', 'No sales yet')}
+            cta={L('فروش اسکین به ما', 'Sell skins to us')}
+            href="/sell"
+          />
         ) : (
           <ul className="divide-y divide-border">
-            {sells.map((s) => {
-              const done = s.step >= 2;
-              return (
-                <li key={s.id}>
-                  <Link href={`/sell-order/${s.id}`} className="flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-card-hover">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-background/60">
-                      <Coins className="size-4 text-accent" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-black" dir="ltr">
-                        {nf(s.lines.length)} {L('آیتم', 'items')} · {s.lines[0]?.name ?? '—'}
-                      </p>
-                      <p className="mt-1 flex items-center gap-1.5 text-[10px] text-muted">
-                        {done ? <CheckCircle2 className="size-3 text-emerald-400" /> : <Clock className="size-3 text-accent" />}
-                        <span dir="ltr">{s.id}</span> · {dt(s.created_at)}
-                      </p>
-                    </div>
-                    <div className="hidden shrink-0 text-end sm:block">
-                      <p className="text-xs font-black text-accent">
-                        {nf(Math.round(s.payout_usd * USD_TO_TOMAN))} {L('تومان', 'Toman')}
-                      </p>
-                      <p className="text-[9px] text-muted">
-                        {L('دریافتی', 'payout')} · {nf(s.rate * 100, 1)}%
-                      </p>
-                    </div>
-                    <Pill done={done} label={done ? L('پرداخت شد', 'Paid out') : `${nf(s.step + 1)}/۳`} />
-                    <Chevron locale={locale} />
-                  </Link>
-                </li>
-              );
-            })}
+            {sells.map((o) => (
+              <li key={o.id}>
+                <Link
+                  href={`/sell-order/${o.id}`}
+                  className="flex flex-wrap items-center justify-between gap-3 py-4 transition-colors hover:bg-card/50 px-2 -mx-2 rounded-lg cursor-pointer"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold">
+                      {o.firstItem ?? L('فروش', 'Sale')}
+                      {o.itemCount > 1 && <span className="text-muted"> +{nf(o.itemCount - 1)}</span>}
+                    </p>
+                    <p className="mt-1 text-[10px] text-muted" dir="ltr">
+                      {o.id} · {dt(o.createdAt)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <StatusPill kind="sell" step={o.step} status="" L={L} />
+                    <b className="text-sm tabular-nums" dir="ltr">
+                      {nf(Math.round(Number(o.payoutUsd)))}$
+                    </b>
+                    <ChevronRight className="size-4 rotate-180 text-muted rtl:rotate-0" />
+                  </div>
+                </Link>
+              </li>
+            ))}
           </ul>
         )}
       </div>
@@ -354,99 +390,52 @@ export default function AccountView() {
   );
 }
 
-/* ---------------- pieces ---------------- */
-
-function Chevron({ locale }: { locale: string }) {
-  return <ChevronRight className={`size-4 shrink-0 text-muted ${locale === 'fa' ? 'rotate-180' : ''}`} />;
-}
-
-function Pill({ done, label }: { done: boolean; label: string }) {
-  if (done) {
-    return (
-      <span className="hidden shrink-0 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[9px] font-bold text-emerald-300 sm:inline-flex">
-        {label}
-      </span>
-    );
-  }
-  return (
-    <span className="hidden shrink-0 items-center gap-1 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-1 text-[9px] font-bold text-accent sm:inline-flex">
-      <Clock className="size-2.5" />
-      {label}
-    </span>
-  );
-}
-
-function Card({
-  Icon,
-  label,
-  value,
-  unit,
-  hint,
-  accent,
-  children,
+function Empty({
+  icon: Icon, title, cta, href,
 }: {
-  Icon: typeof Package;
-  label: string;
-  value: string;
-  unit: string;
-  hint?: string;
-  accent?: boolean;
-  children?: React.ReactNode;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string; cta: string; href: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
-      <div className="flex items-center gap-2">
-        <Icon className={`size-4 ${accent ? 'text-accent' : 'text-muted'}`} />
-        <span className="text-[11px] font-bold text-muted">{label}</span>
-      </div>
-      <div className="mt-3 flex items-baseline gap-1.5">
-        <span className={`text-2xl font-black tabular-nums ${accent ? 'text-accent' : 'text-foreground'}`}>{value}</span>
-        <span className="text-[10px] font-medium text-muted">{unit}</span>
-      </div>
-      {hint && <p className="mt-1 text-[10px] text-muted">{hint}</p>}
-      {children}
-    </div>
-  );
-}
-
-function Tab({
-  active,
-  onClick,
-  count,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  count: number;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`inline-flex h-9 items-center gap-2 rounded-lg px-3.5 text-xs font-bold transition-colors cursor-pointer ${
-        active ? 'bg-accent/10 text-accent' : 'text-muted hover:bg-card-hover hover:text-foreground'
-      }`}
-    >
-      {children}
-      <span className="rounded-full bg-background/80 px-1.5 text-[9px] tabular-nums">{count}</span>
-    </button>
-  );
-}
-
-function Empty({ Icon, title, cta, href }: { Icon: typeof Package; title: string; cta: string; href: string }) {
-  return (
-    <div className="p-12 text-center">
-      <span className="mx-auto grid size-12 place-items-center rounded-2xl border border-border bg-background/60">
-        <Icon className="size-4 text-muted" />
-      </span>
-      <p className="mt-3 text-sm font-bold text-foreground/90">{title}</p>
+    <div className="py-16 text-center">
+      <Icon className="mx-auto size-8 text-muted" />
+      <p className="mt-3 text-sm font-bold">{title}</p>
       <Link
         href={href}
-        className="mt-4 inline-flex h-9 items-center gap-2 rounded-xl border border-accent/40 bg-accent/10 px-4 text-[11px] font-bold text-accent transition-colors hover:bg-accent/20"
+        className="mt-4 inline-flex h-9 items-center rounded-lg bg-accent px-4 text-xs font-bold text-accent-foreground transition-colors hover:bg-accent-strong cursor-pointer"
       >
         {cta}
-        <ChevronRight className="size-3.5" />
       </Link>
     </div>
+  );
+}
+
+function StatusPill({
+  kind, step, status, L,
+}: {
+  kind: 'order' | 'sell';
+  step: number;
+  status: string;
+  L: (fa: string, en: string) => string;
+}) {
+  const done = kind === 'order' ? status === 'COMPLETED' || step >= 3 : step >= 2;
+  const inProgress = !done && step > 0;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-bold ${
+        done
+          ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-500'
+          : inProgress
+            ? 'border-amber-500/40 bg-amber-500/10 text-amber-500'
+            : 'border-border bg-card text-muted'
+      }`}
+    >
+      {done ? <CheckCircle2 className="size-2.5" /> : <Clock className="size-2.5" />}
+      {done
+        ? L('تحویل شد', 'Delivered')
+        : inProgress
+          ? L('در حال انجام', 'In progress')
+          : L('در انتظار', 'Pending')}
+    </span>
   );
 }
