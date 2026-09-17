@@ -7,21 +7,15 @@ import { Search, Bell, ShoppingCart } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import SteamIcon from '@/components/icons/SteamIcon';
-import { getProfile, type Profile } from '@/lib/orders';
 import { useCart } from '@/components/cart/CartProvider';
+import { useSession } from '@/components/session/SessionProvider';
 
 export default function Header() {
   const t = useTranslations('nav');
   const locale = useLocale();
   const searchRef = useRef<HTMLInputElement>(null);
   const cart = useCart();
-  const [profile, setProfile] = useState<Profile | null>(null);
-
-  // hydrate the demo profile once on the client; the header shows an avatar chip
-  // instead of the sign-in button while signed in.
-  useEffect(() => {
-    setProfile(getProfile());
-  }, []);
+  const { user, loading, signInWithSteam } = useSession();
 
   // Ctrl+K / Cmd+K focuses the site search (overrides browser shortcut)
   useEffect(() => {
@@ -92,24 +86,32 @@ export default function Header() {
             <span className="absolute end-1.5 top-1.5 size-1.5 rounded-full bg-accent" />
           </button>
 
-          {profile ? (
+          {loading ? (
+            <div className="ms-2 h-9 w-9 animate-pulse rounded-lg border border-border bg-card" />
+          ) : user ? (
             <Link
               href="/account"
               className="ms-2 inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-2.5 transition-colors hover:border-accent/40 cursor-pointer"
               aria-label={t('account')}
             >
-              <img src={profile.avatar} alt={profile.name} className="size-6 rounded-md object-cover" />
-              <span className="hidden max-w-24 truncate text-xs font-bold sm:inline">{profile.name}</span>
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.name} className="size-6 rounded-md object-cover" />
+              ) : (
+                <span className="grid size-6 place-items-center rounded-md bg-accent/15 text-[10px] font-black text-accent">
+                  {user.name.charAt(0).toUpperCase()}
+                </span>
+              )}
+              <span className="hidden max-w-24 truncate text-xs font-bold sm:inline">{user.name}</span>
             </Link>
           ) : (
-            <Link
-              href="/account"
+            <button
+              onClick={signInWithSteam}
               className="ms-2 inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-xs font-bold text-accent-foreground hover:bg-accent-strong transition-colors cursor-pointer"
             >
               <SteamIcon className="size-4" />
               <span className="hidden sm:inline">{t('login')}</span>
               <span className="sm:hidden">Login</span>
-            </Link>
+            </button>
           )}
         </div>
       </div>
