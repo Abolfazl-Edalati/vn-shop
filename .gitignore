@@ -41,3 +41,10 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# local-only backend test scripts
+seed-test-user.cjs
+security-steam-verify.cjs
+
+# prisma generated client (regenerated on install via postinstall)
+src/generated/

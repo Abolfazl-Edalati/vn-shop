@@ -1,0 +1,129 @@
+// VN Shop — CS2 skins marketplace (Phase 2: backend)
+// Prisma schema for Prisma Postgres — v7 driver adapter pattern
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+  output          = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Steam user — created on first sign-in via Steam OpenID
+model User {
+  id        String   @id @default(cuid())
+  steamId   String   @unique
+  name      String
+  avatar    String   @default("")
+  tradeUrl  String?  @map("trade_url")
+  email     String?
+  wallet    Decimal  @default(0) @db.Decimal(20, 2)
+  role      Role     @default(USER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  orders     Order[]
+  sellOrders SellOrder[]
+
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+/// Purchase order — buyer pays VN Shop, items delivered via Steam trade
+model Order {
+  id            String        @id @default(cuid())
+  number        String        @unique // VN-XXXXXX display id
+  userId        String        @map("user_id")
+  tradeUrl      String        @map("trade_url")
+  email         String?
+  paymentMethod PaymentMethod @map("payment_method")
+  escrowStep    Int           @default(0) @map("escrow_step")
+  lines         OrderLine[]
+  totalUsd      Decimal       @map("total_usd") @db.Decimal(12, 2)
+  totalToman    Decimal       @map("total_toman") @db.Decimal(20, 2)
+  status        OrderStatus   @default(PENDING)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  ESCROW_HOLD
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CARD
+  USDT
+  WALLET
+}
+
+model OrderLine {
+  id         String   @id @default(cuid())
+  orderId    String   @map("order_id")
+  skinId     String   @map("skin_id")
+  name       String
+  wear       String?
+  float      Float?
+  priceUsd   Decimal  @map("price_usd") @db.Decimal(12, 2)
+  priceToman Decimal  @map("price_toman") @db.Decimal(20, 2)
+  quantity   Int      @default(1)
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_lines")
+}
+
+/// Sell order — user sells skins TO VN Shop, we pay out
+model SellOrder {
+  id              String         @id @default(cuid())
+  number          String         @unique // VN-XXXXXX display id
+  userId          String         @map("user_id")
+  payoutMethod    PayoutMethod   @map("payout_method")
+  payoutDest      String?        @map("payout_dest")
+  rate            Decimal        @db.Decimal(5, 4)
+  itemsValueUsd   Decimal        @map("items_value_usd") @db.Decimal(12, 2)
+  itemsValueToman Decimal        @map("items_value_toman") @db.Decimal(20, 2)
+  payoutUsd       Decimal        @map("payout_usd") @db.Decimal(12, 2)
+  payoutToman     Decimal        @map("payout_toman") @db.Decimal(20, 2)
+  step            Int            @default(0) // 0 = offer sent, 1 = received, 2 = paid
+  expiresAt       DateTime       @map("expires_at")
+  lines           SellOrderLine[]
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  @@map("sell_orders")
+}
+
+enum PayoutMethod {
+  WALLET
+  CARD
+  USDT
+}
+
+model SellOrderLine {
+  id          String     @id @default(cuid())
+  sellOrderId String     @map("sell_order_id")
+  skinId      String     @map("skin_id")
+  name        String
+  wear        String?
+  float       Float?
+  priceUsd    Decimal    @map("price_usd") @db.Decimal(12, 2)
+  priceToman  Decimal    @map("price_toman") @db.Decimal(20, 2)
+  sellOrder   SellOrder  @relation(fields: [sellOrderId], references: [id], onDelete: Cascade)
+
+  @@map("sell_order_lines")
+}
