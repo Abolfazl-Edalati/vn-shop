@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { Check, Search, Zap, Download } from 'lucide-react';
+import { Check, Search, Zap, Download, Lock, ShieldCheck } from 'lucide-react';
 import { getDemoInventory, primaryPrice, secondaryPrice, USD_TO_TOMAN } from '@/data/skins';
 import { wearLabel } from '@/components/skins/SkinCard';
+import { getProfile } from '@/lib/orders';
+import SteamIcon from '@/components/icons/SteamIcon';
 
 const PAYOUT_RATE = 0.925; // mock: after ~7.5% total haircut
 
@@ -13,6 +15,13 @@ export default function SellPanel() {
   const t = useTranslations('sell');
   const locale = useLocale();
   const items = getDemoInventory();
+  const [signedIn, setSignedIn] = useState(false);
+
+  // the panel renders for everyone, but inventory is locked until signed in
+  useEffect(() => {
+    setSignedIn(!!getProfile());
+  }, []);
+
   const [selected, setSelected] = useState<Set<string>>(
     new Set(items.slice(0, 2).map((i) => i.id))
   );
@@ -47,7 +56,30 @@ export default function SellPanel() {
 
       <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_360px]">
         {/* item list */}
-        <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card">
+          {/* sign-in gate: blur the inventory until the user is signed in */}
+          {!signedIn && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-card/70 p-6 text-center backdrop-blur-md">
+              <span className="grid size-12 place-items-center rounded-2xl border border-border bg-card">
+                <Lock className="size-5 text-accent" />
+              </span>
+              <p className="text-sm font-black">
+                {locale === 'fa' ? 'برای دیدن اینونتوری وارد شو' : 'Sign in to see your inventory'}
+              </p>
+              <p className="max-w-xs text-[11px] leading-relaxed text-muted">
+                {locale === 'fa'
+                  ? 'اسکین‌های اکانت استیمت رو می‌خوایم نشون بدیم و قیمت بگیریم.'
+                  : 'We’ll pull your Steam inventory skins and price them instantly.'}
+              </p>
+              <Link
+                href="/account"
+                className="mt-1 inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-5 text-xs font-black text-accent-foreground transition-colors hover:bg-accent-strong cursor-pointer"
+              >
+                <SteamIcon className="size-4" />
+                {locale === 'fa' ? 'ورود با استیم' : 'Sign in with Steam'}
+              </Link>
+            </div>
+          )}
           {/* search/select row */}
           <div className="flex items-center gap-3 border-b border-border p-3.5">
             <div className="relative flex-1">
@@ -137,11 +169,19 @@ export default function SellPanel() {
             <p className="text-[10px] text-muted">{secondaryPrice(payout, locale)}</p>
           </div>
 
-          <Link href="/sell" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-accent text-sm font-bold text-accent-foreground transition-colors hover:bg-accent-strong cursor-pointer">
-            <Zap className="size-4" />
-            {t('quickSell', { count: nf(selected.size || 1) })}
+          <Link
+            href={signedIn ? '/sell' : '/account'}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-accent text-sm font-bold text-accent-foreground transition-colors hover:bg-accent-strong cursor-pointer"
+          >
+            {signedIn ? <Zap className="size-4" /> : <Lock className="size-4" />}
+            {signedIn
+              ? t('quickSell', { count: nf(selected.size || 1) })
+              : locale === 'fa' ? 'برای فروش وارد شو' : 'Sign in to sell'}
           </Link>
-          <Link href="/sell" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background text-sm font-bold text-foreground transition-colors hover:border-accent/40 cursor-pointer">
+          <Link
+            href={signedIn ? '/sell' : '/account'}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background text-sm font-bold text-foreground transition-colors hover:border-accent/40 cursor-pointer"
+          >
             <Download className="size-4" />
             {t('loadMyItems')}
           </Link>
