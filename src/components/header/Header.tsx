@@ -71,9 +71,6 @@ export default function Header() {
         {/* Right side */}
         <div className="ms-auto flex items-center gap-1">
           <LanguageSwitcher />
-          <button className="hidden rounded-md px-2 py-1.5 text-muted hover:bg-card-hover hover:text-foreground transition-colors cursor-pointer sm:inline-flex" aria-label="Currency">
-            <span className="text-xs font-medium">$</span>
-          </button>
           <ThemeToggle />
           <Link
             href="/cart"
