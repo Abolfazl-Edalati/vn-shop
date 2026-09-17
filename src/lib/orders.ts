@@ -121,3 +121,71 @@ export function updateSellOrderStep(id: string, step: number): SellOrder | undef
     return undefined;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Demo profile — stands in for a real Steam sign-in (phase 1).
+ * ------------------------------------------------------------------ */
+
+const PROFILE_KEY = 'vn-profile';
+
+export type Profile = {
+  steamId: string;
+  name: string;
+  avatar: string;
+  /** trade-offer URL from Steam inventory settings */
+  tradeUrl: string;
+  email: string;
+  joinedAt: number;
+};
+
+export const DEMO_PROFILE: Profile = {
+  steamId: '76561198063153978',
+  name: 'Abolfazl',
+  avatar: 'https://avatars.steamstatic.com/b5bd56c1aa4644a474a2e4982e2739e4e0735e55_full.jpg',
+  tradeUrl: 'https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh',
+  email: 'you@example.com',
+  joinedAt: new Date('2026-08-04T00:00:00').getTime(),
+};
+
+export function getProfile(): Profile | null {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    return raw ? (JSON.parse(raw) as Profile) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setProfile(p: Profile): void {
+  try {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+  } catch {}
+}
+
+export function clearProfile(): void {
+  try {
+    localStorage.removeItem(PROFILE_KEY);
+  } catch {}
+}
+
+/* ------------------------------------------------------------------ *
+ * VN Shop wallet — mock internal balance. Demo profile starts funded.
+ * ------------------------------------------------------------------ */
+
+const WALLET_KEY = 'vn-wallet';
+
+export function getWalletToman(): number {
+  try {
+    const raw = localStorage.getItem(WALLET_KEY);
+    if (raw == null) return 0;
+    return Number(JSON.parse(raw)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function setWalletToman(amount: number): void {
+  try {
+    localStorage.setItem(WALLET_KEY, JSON.stringify(Math.max(0, Math.round(amount))));
+  } catch {}
+}
