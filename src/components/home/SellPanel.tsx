@@ -154,19 +154,31 @@ export default function SellPanel() {
           <div className="space-y-2.5 text-xs">
             <p className="flex justify-between text-muted">
               {t('inventoryValue')}
-              <b className="text-foreground">{primaryPrice(inventoryValue, locale)}{locale === 'fa' && <span className="font-medium text-muted"> تومان</span>}</b>
+              {signedIn ? (
+                <b className="text-foreground">{primaryPrice(inventoryValue, locale)}{locale === 'fa' && <span className="font-medium text-muted"> تومان</span>}</b>
+              ) : (
+                <span className="inline-block h-3.5 w-24 rounded bg-muted/40" />
+              )}
             </p>
             <p className="flex justify-between text-muted">
               {t('selected')} ({nf(selected.size)}):
-              <b className="text-foreground">{primaryPrice(selectedValue, locale)}{locale === 'fa' && <span className="font-medium text-muted"> تومان</span>}</b>
+              {signedIn ? (
+                <b className="text-foreground">{primaryPrice(selectedValue, locale)}{locale === 'fa' && <span className="font-medium text-muted"> تومان</span>}</b>
+              ) : (
+                <span className="inline-block h-3.5 w-20 rounded bg-muted/40" />
+              )}
             </p>
             <p className="flex items-baseline justify-between border-t border-border pt-2.5 text-muted">
               {t('estimatedPayout')}
-              <b className="text-base font-black text-accent">
-                {primaryPrice(payout, locale)}{locale === 'fa' && <span className="text-xs font-medium"> تومان</span>}
-              </b>
+              {signedIn ? (
+                <b className="text-base font-black text-accent">
+                  {primaryPrice(payout, locale)}{locale === 'fa' && <span className="text-xs font-medium"> تومان</span>}
+                </b>
+              ) : (
+                <span className="inline-block h-5 w-28 rounded bg-muted/40" />
+              )}
             </p>
-            <p className="text-[10px] text-muted">{secondaryPrice(payout, locale)}</p>
+            <p className="text-[10px] text-muted">{signedIn ? secondaryPrice(payout, locale) : ''}</p>
           </div>
 
           <Link
