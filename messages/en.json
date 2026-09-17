@@ -13,7 +13,8 @@
     "login": "Login with Steam",
     "notifications": "Notifications",
     "language": "Language",
-    "currency": "Currency"
+    "currency": "Currency",
+    "account": "Account"
   },
   "hero": {
     "badgeTrades": "trades settled today",

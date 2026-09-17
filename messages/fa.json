@@ -13,7 +13,8 @@
     "login": "ورود با استیم",
     "notifications": "اعلان‌ها",
     "language": "زبان",
-    "currency": "واحد پول"
+    "currency": "واحد پول",
+    "account": "حساب کاربری"
   },
   "hero": {
     "badgeTrades": "ترید تسویه‌شده امروز",

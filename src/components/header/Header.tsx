@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { Search, Bell, ShoppingCart } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import SteamIcon from '@/components/icons/SteamIcon';
+import { getProfile, type Profile } from '@/lib/orders';
 import { useCart } from '@/components/cart/CartProvider';
 
 export default function Header() {
@@ -14,6 +15,13 @@ export default function Header() {
   const locale = useLocale();
   const searchRef = useRef<HTMLInputElement>(null);
   const cart = useCart();
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  // hydrate the demo profile once on the client; the header shows an avatar chip
+  // instead of the sign-in button while signed in.
+  useEffect(() => {
+    setProfile(getProfile());
+  }, []);
 
   // Ctrl+K / Cmd+K focuses the site search (overrides browser shortcut)
   useEffect(() => {
@@ -79,16 +87,33 @@ export default function Header() {
               </span>
             )}
           </Link>
-          <button className="relative rounded-md px-2 py-1.5 text-muted hover:bg-card-hover hover:text-foreground transition-colors cursor-pointer" aria-label={t('notifications')}>
+          <button
+            className="relative rounded-md px-2 py-1.5 text-muted hover:bg-card-hover hover:text-foreground transition-colors cursor-pointer"
+            aria-label={t('notifications')}
+          >
             <Bell className="size-4" />
             <span className="absolute end-1.5 top-1.5 size-1.5 rounded-full bg-accent" />
           </button>
 
-          <button className="ms-2 inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-xs font-bold text-accent-foreground hover:bg-accent-strong transition-colors cursor-pointer">
-            <SteamIcon className="size-4" />
-            <span className="hidden sm:inline">{t('login')}</span>
-            <span className="sm:hidden">Login</span>
-          </button>
+          {profile ? (
+            <Link
+              href="/account"
+              className="ms-2 inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-2.5 transition-colors hover:border-accent/40 cursor-pointer"
+              aria-label={t('account')}
+            >
+              <img src={profile.avatar} alt={profile.name} className="size-6 rounded-md object-cover" />
+              <span className="hidden max-w-24 truncate text-xs font-bold sm:inline">{profile.name}</span>
+            </Link>
+          ) : (
+            <Link
+              href="/account"
+              className="ms-2 inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-xs font-bold text-accent-foreground hover:bg-accent-strong transition-colors cursor-pointer"
+            >
+              <SteamIcon className="size-4" />
+              <span className="hidden sm:inline">{t('login')}</span>
+              <span className="sm:hidden">Login</span>
+            </Link>
+          )}
         </div>
       </div>
     </header>
